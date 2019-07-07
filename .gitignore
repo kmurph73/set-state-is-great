@@ -1,0 +1,18 @@
+# System
+.DS_Store
+
+# Logs
+logs
+*.log
+
+# Dependencies
+node_modules
+
+# Debug log from npm
+npm-debug.log
+
+# Build output
+dist
+
+# Yarn
+yarn-error.log
