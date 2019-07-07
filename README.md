@@ -1,7 +1,7 @@
 # Set State is Great
 <p align='center'>A global store, setState, and a hooks-based API.</p>
 
-Global state management without the ceremony.  No Context, Redux, Thunks, Selectors, or anything that ends in "ducer." 
+Global state management without the ceremony.  No Context, Redux, Actions, Thunks, Selectors, or anything that ends in "ducer." 
 
 ## Creating the store
 
@@ -19,7 +19,7 @@ const store = createStore({
 
 In this scenario, `main`, `drawer`, and `home` are your _stores_.
 
-Since SSiG is designed to be global, feel free to attach `store` to a global object for global access, eg:
+Since SSiG is designed to be a global store, feel free to attach `store` to a top-level object for global access, eg:
 
 ``` javascript
 window.App = {store: store};
@@ -34,7 +34,7 @@ store.setState('drawer', {open: true});
 ```
 
 ## The `useStoreState` Hook
-sSIG comes with only one hook (for now): `useStoreState`:
+SSiG comes with only one hook (for now): `useStoreState`:
 ```javascript
 import {useStoreState} from 'set-state-is-great';
 
@@ -57,9 +57,9 @@ export default React.memo(Drawer);
 
 `useStoreState` requires that you pass in the _same_ object every time, so we define it outside of the function.
 
-As you might guess, `watch_attrs: ['open']` tells sSIG to only rerender this function if `drawer.open` changes.
+`watch_attrs: ['open']` tells sSIG to only rerender this function if `drawer.open` changes.
 
-However, even though it's only watching `open`, useStoreState returns `drawer`'s entire state.  EG, if `drawer` also a had a `rando` attr, you could grab that while you're at it:
+However, despite only watching `open`, useStoreState returns `drawer`'s entire state.  EG, if `drawer` also a had a `rando` attr, you could grab that while you're at it:
 
 ```javascript
 const {open, rando} = useStoreState(query);
@@ -109,7 +109,7 @@ function Drawer() {
 export default React.memo(Drawer);
 ```
 
-With the magic of `getStateHelpers` this transforms into:
+With `getStateHelpers` this collapses down to:
 
 ```javascript
 import {useStoreState} from 'set-state-is-great';
@@ -150,7 +150,7 @@ store.getState('drawer');
 
 ## Watching for changes to any attribute in a store
 
-If you'd like to watch for changes to any attr in the store, simply remove `watch_attrs`:
+If you'd like to watch for changes to _any_ attr in a store, simply remove `watch_attrs`:
 
 ```javascript
 // will trigger a rerender upon any change to the drawer store
@@ -161,17 +161,19 @@ const {query, getState, setState} = getStateHelpers({
 
 ## Motivation
 
-SSiG was inspired by my abuse of [easy-peasy][2] while building a medium-sized React SPA.  I wasn't sure why I was supposed to create an `action` just to add something to an array, when you can just do 
+SSiG was inspired by my abuse of [easy-peasy][2] while building a medium-sized React SPA.  I wasn't sure why I was supposed to create an `action` just to add an item to an array, when you can just do: 
 ```javascript 
 setState({arr: [...arr, item]});
 ```
+
+Replacing easy-peasy with SSiG in my app was quite easy ... and everything seems to Just Work.
 ## How does it work?
 
-When `useStoreState` is first called, a `forceUpdate` function is created (using [use-force-update][1]) and stored away (which is dereferenced upon component dismount, of course).
+When `useStoreState` is called, a `forceUpdate` function is created (using [use-force-update][1]) and stored away (which is dereferenced upon component dismount, of course).
 
-When `setState` is called, it finds all of the changed attributes for that store, then finds the objects that are watching those attributes, then calls the `forceUpdate`s associated with those objects.
+When `setState` is called, it finds all of the changed attributes for that store, then finds the objects that are watching those attributes, then calls the `forceUpdate`s mapped to those objects.
 
-So ultimately, it merely maps objects to `forceUpdate`s, and it's just a matter of finding the relevant objects when `setState` is called.
+So ultimately, SSiG merely maps objects to `forceUpdate`s, and it's just a matter of finding the relevant objects when `setState` is called.
 
 ## Prior art
 
