@@ -1,5 +1,5 @@
 # setStateIsGreat
-<p align='center'>A global store & setState, with a hooks-based API.</p>
+<p align='center'>A global store, setState, and a hooks-based API.</p>
 
 Global state management without the ceremony.  No Context, Redux, Thunks, Selectors, or anything that ends in "ducer." 
 
