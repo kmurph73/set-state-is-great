@@ -95,7 +95,7 @@ const query = {
 
 function Drawer() {
   useStoreState(query);
-  // getState() used for demo purposes only ... dont look too deeply into this
+  // getState() used for demo purposes here ... dont look too deeply into it
   const state = getState();
 
   return (
@@ -109,7 +109,7 @@ function Drawer() {
 export default React.memo(Drawer);
 ```
 
-With the magic of `getStateHelpers` you can do:
+With the magic of `getStateHelpers` this transforms into:
 
 ```javascript
 import {useStoreState} from 'set-state-is-great';
@@ -142,10 +142,10 @@ export default React.memo(Drawer);
 
 ## getState
 
-As shown above, you can access a store's state via `getState`:
+You can access a store's state via `getState(store)`:
 
-```javascript 
-store.getState('drawer')
+```javascript
+store.getState('drawer');
 ```
 
 ## Watching for changes to any attribute in a store
@@ -153,7 +153,15 @@ store.getState('drawer')
 If you'd like to watch for changes to any attr in the store, simply remove `watch_attrs`:
 
 ```javascript
+// will trigger a rerender upon any change to the drawer store
 const {query, getState, setState} = getStateHelpers({
   store: 'drawer'
 });
 ```
+## How does it work?
+
+coming soon
+
+## Prior art
+
+easy-peasy

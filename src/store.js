@@ -2,10 +2,10 @@ var state, storeObj;
 
 const forceUpdatesStore = {};
 
-const dataHold = {};
+const objHold = {};
 
 export const subscribe = (obj, forceUpdate) => {
-  const store = dataHold[obj.store];
+  const store = objHold[obj.store];
   if (store.includes(obj)) return;
 
   let slot = store.indexOf(null);
@@ -22,11 +22,11 @@ export const subscribe = (obj, forceUpdate) => {
   forceUpdatesStore[key] = forceUpdate;
 };
 
-export const unsubscribe = (data) => {
-  const slot = dataHold[data.store].indexOf(data);
-  const key = `${data.store}-${slot}`;
+export const unsubscribe = (obj) => {
+  const slot = objHold[obj.store].indexOf(obj);
+  const key = `${obj.store}-${slot}`;
 
-  forceUpdatesStore[key] = dataHold[data.store][slot] = null;
+  forceUpdatesStore[key] = objHold[obj.store][slot] = null;
 };
 
 const setState = (store, next_state) => {
@@ -42,19 +42,19 @@ const setState = (store, next_state) => {
     }
   }
 
-  const data_arr = dataHold[store];
+  const obj_arr = objHold[store];
 
   const forceUpdatesToCall = new Set();
 
-  var slot, j, forceUpdate, data, changed_attr, changed_attrs_length, data_arr_length = data_arr.length;
+  var slot, j, forceUpdate, obj, changed_attr, changed_attrs_length, obj_arr_length = obj_arr.length;
 
-  for(slot = 0; slot < data_arr_length; slot++)  {
-    data = data_arr[slot];
+  for(slot = 0; slot < obj_arr_length; slot++)  {
+    obj = obj_arr[slot];
 
-    if (!data) continue;
+    if (!obj) continue;
 
-    if (!data.watch_attrs) {
-      forceUpdate = forceUpdatesStore[`${data.store}-${slot}`];
+    if (!obj.watch_attrs) {
+      forceUpdate = forceUpdatesStore[`${obj.store}-${slot}`];
       forceUpdatesToCall.add(forceUpdate);
       continue;
     }
@@ -64,8 +64,8 @@ const setState = (store, next_state) => {
     for(j = 0; j < changed_attrs_length; j++) {
       changed_attr = changed_attrs[j];
 
-      if (data.watch_attrs.includes(changed_attr)) {
-        forceUpdate = forceUpdatesStore[`${data.store}-${slot}`];
+      if (obj.watch_attrs.includes(changed_attr)) {
+        forceUpdate = forceUpdatesStore[`${obj.store}-${slot}`];
         forceUpdatesToCall.add(forceUpdate);
         break;
       }
@@ -88,10 +88,10 @@ const createGetState = store => () => {
 const forceUpdateViaName = (store, name) => {
   if (!store || !name) return;
 
-  const obj = dataHold[store].find(obj => obj.name === name);
+  const obj = objHold[store].find(obj => obj.name === name);
 
   if (obj) {
-    const slot = dataHold[store].indexOf(obj);
+    const slot = objHold[store].indexOf(obj);
 
     const key = `${store}-${slot}`;
 
@@ -104,7 +104,7 @@ export const createStore = (initialState) => {
 
   state = initialState;
 
-  keys.forEach(k => dataHold[k] = []);
+  keys.forEach(k => objHold[k] = []);
 
   storeObj = { setState, getState, forceUpdateViaName };
 
