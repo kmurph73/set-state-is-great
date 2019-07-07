@@ -3,6 +3,16 @@
 
 Global state management without the ceremony.  No Context, Redux, Actions, Thunks, Selectors, or anything that ends in "ducer." 
 
+## Installing
+
+```
+npm install set-state-is-great
+```
+or
+```
+yarn add set-state-is-great
+```
+
 ## Creating the store
 
 Set State is Great (SSiG)'s data is organized by _stores_, which are objects that represent logical groupings of data (likely pertaining to a particular component). EG: 
