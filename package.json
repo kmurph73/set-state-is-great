@@ -1,4 +1,30 @@
 {
+  "name": "set-state-is-great",
+  "version": "0.0.1",
+  "description": "Global store + setState + hooks integration",
+  "license": "MIT",
+  "main": "src/index.js",
+  "files": [
+    "src",
+    "index.js"
+  ],
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/kmurph73@gmail.com/set-state-is-great.git"
+  },
+  "author": "Kyle Murphy <kmurph73@gmail.com>",
+  "homepage": "https://github.com/kmurph73/set-state-is-great",
+  "keywords": [
+    "react",
+    "state",
+    "hooks"
+  ],
+  "peerDependencies": {
+    "react": "^16.8.0"
+  },
   "dependencies": {
     "use-force-update": "^1.0.6"
   }

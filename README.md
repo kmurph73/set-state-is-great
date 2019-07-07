@@ -5,7 +5,7 @@ Global state management without the ceremony.  No Context, Redux, Actions, Thunk
 
 ## Creating the store
 
-Set State is Great (SSiG)'s data is organized by _stores_, which are objects that represent logical groupings of data (often pertaining to a particular component). EG: 
+Set State is Great (SSiG)'s data is organized by _stores_, which are objects that represent logical groupings of data (likely pertaining to a particular component). EG: 
 
 ```javascript
 import {createStore} from 'set-state-is-great';
@@ -57,7 +57,7 @@ export default React.memo(Drawer);
 
 `useStoreState` requires that you pass in the _same_ object every time, so we define it outside of the function.
 
-`watch_attrs: ['open']` tells sSIG to only rerender this function if `drawer.open` changes.
+`watch_attrs: ['open']` tells SSiG to only rerender this function if `drawer.open` changes.
 
 However, despite only watching `open`, useStoreState returns `drawer`'s entire state.  EG, if `drawer` also a had a `rando` attr, you could grab that while you're at it:
 
@@ -159,6 +159,30 @@ const {query, getState, setState} = getStateHelpers({
 });
 ```
 
+## Shallow compare
+
+SSiG performs a shallow comparison when setState is called.  [See here](src/store.js#L31).
+
+I've thought about pushing this another level deep, and allowing stuff like `"post.title"` in `watch_attrs` ... but I've yet to encounter a need for it.  Thoughts are welcome on this.
+
+## forceUpdateViaName
+You can give the query object a name:
+
+```javascript
+const query = {
+  store: 'post',
+  name: 'post_detail'
+};
+```
+
+Which you enables you to forceUpdate this component from anywhere (if it's still mounted - if not, nothing bad happens).
+
+```javascript
+  window.App.store.forceUpdateViaName('post', 'post_detail');
+```
+
+I'm using it in my app, but it's kinda funky ... consider this an unstable api.
+
 ## Motivation
 
 SSiG was inspired by my abuse of [easy-peasy][2] while building a medium-sized React SPA.  I wasn't sure why I was supposed to create an `action` just to add an item to an array, when you can just do: 
@@ -171,13 +195,20 @@ Replacing easy-peasy with SSiG in my app was quite easy ... and everything seems
 
 When `useStoreState` is called, a `forceUpdate` function is created (using [use-force-update][1]) and stored away (which is dereferenced upon component dismount, of course).
 
-When `setState` is called, it finds all of the changed attributes for that store, then finds the objects that are watching those attributes, then calls the `forceUpdate`s mapped to those objects.
+When `setState` is called, it finds all of the changed attributes for that store, then finds the objects that have those attrs in `watch_attrs`, then calls the `forceUpdate`s associated with those objects.
 
 So ultimately, SSiG merely maps objects to `forceUpdate`s, and it's just a matter of finding the relevant objects when `setState` is called.
 
 ## Prior art
 
 [easy-peasy][2]
+
+## Todo
+
+* Tests
+* TypeScript stuff - maybe rewrite it in TS?
+* Make my own useForceUpdate hook?  Would make this lib zero-dependency.
+* chill
 
 [1]: https://github.com/CharlesStover/use-force-update
 [2]: https://github.com/ctrlplusb/easy-peasy
