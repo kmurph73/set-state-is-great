@@ -1,11 +1,11 @@
-# setStateIsGreat
+# Set State is Great
 <p align='center'>A global store, setState, and a hooks-based API.</p>
 
 Global state management without the ceremony.  No Context, Redux, Thunks, Selectors, or anything that ends in "ducer." 
 
 ## Creating the store
 
-setStateIsGreat (sSIG)'s data is organized by _stores_, which are objects that represent logical groupings of data (often pertaining to a particular component). EG: 
+Set State is Great (SSiG)'s data is organized by _stores_, which are objects that represent logical groupings of data (often pertaining to a particular component). EG: 
 
 ```javascript
 import {createStore} from 'set-state-is-great';
@@ -19,7 +19,7 @@ const store = createStore({
 
 In this scenario, `main`, `drawer`, and `home` are your _stores_.
 
-Since sSIG is designed to be global, feel free to attach `store` to a global object for global access, eg:
+Since SSiG is designed to be global, feel free to attach `store` to a global object for global access, eg:
 
 ``` javascript
 window.App = {store: store};
@@ -158,10 +158,24 @@ const {query, getState, setState} = getStateHelpers({
   store: 'drawer'
 });
 ```
+
+## Motivation
+
+SSiG was inspired by my abuse of [easy-peasy][2] while building a medium-sized React SPA.  I wasn't sure why I was supposed to create an `action` just to add something to an array, when you can just do 
+```javascript 
+setState({arr: [...arr, item]});
+```
 ## How does it work?
 
-coming soon
+When `useStoreState` is first called, a `forceUpdate` function is created (using [use-force-update][1]) and stored away (which is dereferenced upon component dismount, of course).
+
+When `setState` is called, it finds all of the changed attributes for that store, then finds the objects that are watching those attributes, then calls the `forceUpdate`s associated with those objects.
+
+So ultimately, it merely maps objects to `forceUpdate`s, and it's just a matter of finding the relevant objects when `setState` is called.
 
 ## Prior art
 
-easy-peasy
+[easy-peasy][2]
+
+[1]: https://github.com/CharlesStover/use-force-update
+[2]: https://github.com/ctrlplusb/easy-peasy

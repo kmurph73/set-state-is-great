@@ -1,32 +1,25 @@
 var state, storeObj;
 
-const forceUpdatesStore = {};
-
-const objHold = {};
+const objStore = {};
 
 export const subscribe = (obj, forceUpdate) => {
-  const store = objHold[obj.store];
-  if (store.includes(obj)) return;
+  if (objStore[obj.store].get(obj)) return;
 
-  let slot = store.indexOf(null);
-
-  if (slot >= 0) {
-    store[slot] = obj;
-  } else {
-    store.push(obj);
-    slot = store.length - 1;
-  }
-
-  const key = `${obj.store}-${slot}`;
-
-  forceUpdatesStore[key] = forceUpdate;
+  objStore[obj.store].set(obj, forceUpdate);
 };
 
 export const unsubscribe = (obj) => {
-  const slot = objHold[obj.store].indexOf(obj);
-  const key = `${obj.store}-${slot}`;
+  objStore[obj.store].delete(obj);
+};
 
-  forceUpdatesStore[key] = objHold[obj.store][slot] = null;
+const watchingChanges = (changed_attrs, watch_attrs) => {
+  for (let i = 0; i < changed_attrs.length; i++) {
+    if (watch_attrs.includes(changed_attrs[i])) {
+      return true;
+    }
+  }
+
+  return false;
 };
 
 const setState = (store, next_state) => {
@@ -34,45 +27,24 @@ const setState = (store, next_state) => {
 
   const existing_state = state[store];
 
-  var attr;
-  for (attr in next_state) {
+  for (var attr in next_state) {
     if (existing_state[attr] !== next_state[attr]) {
       existing_state[attr] = next_state[attr];
       changed_attrs.push(attr);
     }
   }
 
-  const obj_arr = objHold[store];
+  const forceUpdatesToCall = [];
 
-  const forceUpdatesToCall = new Set();
-
-  var slot, j, forceUpdate, obj, changed_attr, changed_attrs_length, obj_arr_length = obj_arr.length;
-
-  for(slot = 0; slot < obj_arr_length; slot++)  {
-    obj = obj_arr[slot];
-
-    if (!obj) continue;
-
-    if (!obj.watch_attrs) {
-      forceUpdate = forceUpdatesStore[`${obj.store}-${slot}`];
-      forceUpdatesToCall.add(forceUpdate);
-      continue;
-    }
-
-    changed_attrs_length = changed_attrs.length;
-
-    for(j = 0; j < changed_attrs_length; j++) {
-      changed_attr = changed_attrs[j];
-
-      if (obj.watch_attrs.includes(changed_attr)) {
-        forceUpdate = forceUpdatesStore[`${obj.store}-${slot}`];
-        forceUpdatesToCall.add(forceUpdate);
-        break;
-      }
+  for (let [obj, forceUpdate] of objStore[store].entries()) {
+    if ((!obj.watch_attrs) || watchingChanges(changed_attrs, obj.watch_attrs)) {
+      forceUpdatesToCall.push(forceUpdate);
     }
   }
 
-  forceUpdatesToCall.forEach(fu => fu());
+  for(let i = 0; i < forceUpdatesToCall.length; i++) {
+    forceUpdatesToCall[i]();
+  }
 };
 
 export const getState = store => state[store];
@@ -88,23 +60,20 @@ const createGetState = store => () => {
 const forceUpdateViaName = (store, name) => {
   if (!store || !name) return;
 
-  const obj = objHold[store].find(obj => obj.name === name);
-
-  if (obj) {
-    const slot = objHold[store].indexOf(obj);
-
-    const key = `${store}-${slot}`;
-
-    forceUpdatesStore[key]();
+  for (let [obj, forceUpdate] of objStore[store].entries()) {
+    if (obj.name === name) {
+      forceUpdate();
+      return
+    }
   }
 };
 
 export const createStore = (initialState) => {
-  const keys = Object.keys(initialState);
-
   state = initialState;
 
-  keys.forEach(k => objHold[k] = []);
+  for (var store in initialState) {
+    objStore[store] = new Map();
+  }
 
   storeObj = { setState, getState, forceUpdateViaName };
 
