@@ -1,5 +1,5 @@
 # setStateIsGreat
-<p align='center'>A global store, `setState`, and a hooks-based API.</p>
+<p align='center'>A global store & setState, with a hooks-based API.</p>
 
 Global state management without the ceremony.  No Context, Redux, Thunks, Selectors, or anything that ends in "ducer." 
 
@@ -18,6 +18,12 @@ const store = createStore({
 ```
 
 In this scenario, `main`, `drawer`, and `home` are your _stores_.
+
+Since sSIG is designed to be global, feel free to attach `store` to a global object for global access, eg:
+
+``` javascript
+window.App = {store: store};
+```
 
 ## setState
 
@@ -49,50 +55,34 @@ function Drawer() {
 export default React.memo(Drawer);
 ```
 
-This is where things start to get a bit more complicated.  `useStoreState` requires that you pass in the _same_ object every time, so we define it outside of the function.
+`useStoreState` requires that you pass in the _same_ object every time, so we define it outside of the function.
 
-As you might guess, `watch_attrs` tells sSIG to only rerender this function if `drawer.open` changes.
+As you might guess, `watch_attrs: ['open']` tells sSIG to only rerender this function if `drawer.open` changes.
 
-However, even though it's only watching `open`, useStoreState returns `drawer`'s entire object.  EG, if `drawer` also a had a `rando` attr, you could grab that while you're at it:
+However, even though it's only watching `open`, useStoreState returns `drawer`'s entire state.  EG, if `drawer` also a had a `rando` attr, you could grab that while you're at it:
 
 ```javascript
 const {open, rando} = useStoreState(query);
 ```
-
-## _Really_ global state
-
-Since sSIG is designed to be a global store, it's expected that you can access it globally.
-
-As a result, `createStore` accepts a second parameter - a global object.  Behold: 
-
+or just the entire state object:
 ```javascript
-window.App = {};
-createStore({
-  main: {viewShown: 'Home'},
-  drawer: {open: false, rando: '?'},
-  home: {title: 'Home'}
-}, window.App);
-
-// sSIG will set the store on window.App.store
-window.App.store.setState('drawer', {rando: 'what even is this thing?'});
+const drawerState = useStoreState(query);
 ```
 
-sSIG takes some liberties and assigns the store to `window.App.store`
+## getStateHelpers
 
-The advantage of this comes into effect with the `getHelpers` helper.
-
-## getHelpers
-
-You can only use this if you give the createStore a global object!
-
-Since sSIG has a has a reference to your store, it can give you some syntact sugar helper functions.  So instead of doing this:
+`getStateHelpers` gives you `setState` & `getState` for a particular store. So instead of doing this (assuming you've attached `store` to a global object):
 
 ```javascript
 import {useStoreState} from 'set-state-is-great';
 
+const setState = (state) => {
+  window.App.store.setState('drawer', state);
+};
 
-
-const setState = 
+const getState = () => {
+  return window.App.store.getState('drawer');
+};
 
 const close = () => {
   setState({open: false})
@@ -102,6 +92,36 @@ const query = {
   store: 'drawer',
   watch_attrs: ['open']
 };
+
+function Drawer() {
+  useStoreState(query);
+  // getState() used for demo purposes only ... dont look too deeply into this
+  const state = getState();
+
+  return (
+    <MuiDrawer open={state.open}>
+      <div onClick={close}>close drawer</div>
+      <div>rando? {state.rando}</div>
+    </MuiDrawer>
+  )
+}
+
+export default React.memo(Drawer);
+```
+
+With the magic of `getStateHelpers` you can do:
+
+```javascript
+import {useStoreState} from 'set-state-is-great';
+
+const close = () => {
+  setState({open: false})
+};
+
+const {query, getState, setState} = getStateHelpers({
+  store: 'drawer',
+  watch_attrs: ['open']
+});
 
 function Drawer() {
   useStoreState(query);
@@ -116,4 +136,24 @@ function Drawer() {
 }
 
 export default React.memo(Drawer);
+```
+
+`getStateHelpers` also spits back `query` (the same object you passed in) for you to to destructure and pass into `useStoreState`
+
+## getState
+
+As shown above, you can access a store's state via `getState`:
+
+```javascript 
+store.getState('drawer')
+```
+
+## Watching for changes to any attribute in a store
+
+If you'd like to watch for changes to any attr in the store, simply remove `watch_attrs`:
+
+```javascript
+const {query, getState, setState} = getStateHelpers({
+  store: 'drawer'
+});
 ```
