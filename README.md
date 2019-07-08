@@ -50,7 +50,7 @@ import {useStoreState} from 'set-state-is-great';
 
 const query = {
   store: 'drawer',
-  watch_attrs: ['open']
+  watchAttrs: ['open']
 };
 
 function Drawer() {
@@ -67,7 +67,7 @@ export default React.memo(Drawer);
 
 `useStoreState` requires that you pass in the _same_ object every time, so we define it outside of the function.
 
-`watch_attrs: ['open']` tells SSiG to only rerender this function if `drawer.open` changes.
+`watchAttrs: ['open']` tells SSiG to only rerender this function if `drawer.open` changes.
 
 However, despite only watching `open`, useStoreState returns `drawer`'s entire state.  EG, if `drawer` also a had a `rando` attr, you could grab that while you're at it:
 
@@ -100,7 +100,7 @@ const close = () => {
 
 const query = {
   store: 'drawer',
-  watch_attrs: ['open']
+  watchAttrs: ['open']
 };
 
 function Drawer() {
@@ -130,7 +130,7 @@ const close = () => {
 
 const {query, getState, setState} = getStateHelpers({
   store: 'drawer',
-  watch_attrs: ['open']
+  watchAttrs: ['open']
 });
 
 function Drawer() {
@@ -160,7 +160,7 @@ store.getState('drawer');
 
 ## Watching for changes to any attribute in a store
 
-If you'd like to watch for changes to _any_ attr in a store, simply remove `watch_attrs`:
+If you'd like to watch for changes to _any_ attr in a store, simply remove `watchAttrs`:
 
 ```javascript
 // will trigger a rerender upon any change to the drawer store
@@ -173,7 +173,7 @@ const {query, getState, setState} = getStateHelpers({
 
 SSiG performs a shallow comparison when setState is called.  [See here](src/store.js#L31).
 
-I've thought about pushing this another level deep, and allowing stuff like `"post.title"` in `watch_attrs` ... but I've yet to encounter a need for it.  Thoughts are welcome on this.
+I've thought about pushing this another level deep, and allowing stuff like `"post.title"` in `watchAttrs` ... but I've yet to encounter a need for it.  Thoughts are welcome on this.
 
 ## forceUpdateViaName
 You can give the query object a name:
@@ -205,7 +205,7 @@ Replacing easy-peasy with SSiG in my app was quite easy ... and everything seems
 
 When `useStoreState` is called, a `forceUpdate` function is created (using [use-force-update][1]) and stored away (which is dereferenced upon component dismount, of course).
 
-When `setState` is called, it finds all of the changed attributes for that store, then finds the objects that have those attrs in `watch_attrs`, then calls the `forceUpdate`s associated with those objects.
+When `setState` is called, it finds all of the changed attributes for that store, then finds the objects that have those attrs in `watchAttrs`, then calls the `forceUpdate`s associated with those objects.
 
 So ultimately, SSiG merely maps objects to `forceUpdate`s, and it's just a matter of finding the relevant objects when `setState` is called.
 
@@ -219,6 +219,10 @@ So ultimately, SSiG merely maps objects to `forceUpdate`s, and it's just a matte
 * TypeScript stuff - maybe rewrite it in TS?
 * Make my own useForceUpdate hook?  Would make this lib zero-dependency.
 * chill
+
+## License
+
+MIT
 
 [1]: https://github.com/CharlesStover/use-force-update
 [2]: https://github.com/ctrlplusb/easy-peasy

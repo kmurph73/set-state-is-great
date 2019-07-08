@@ -12,9 +12,9 @@ export const unsubscribe = (obj) => {
   objStore[obj.store].delete(obj);
 };
 
-const watchingChanges = (changed_attrs, watch_attrs) => {
-  for (let i = 0; i < changed_attrs.length; i++) {
-    if (watch_attrs.includes(changed_attrs[i])) {
+const watchingAttrs = (changedAttrs, watchAttrs) => {
+  for (let i = 0; i < changedAttrs.length; i++) {
+    if (watchAttrs.includes(changedAttrs[i])) {
       return true;
     }
   }
@@ -22,22 +22,22 @@ const watchingChanges = (changed_attrs, watch_attrs) => {
   return false;
 };
 
-const setState = (store, next_state) => {
-  const changed_attrs = [];
+const setState = (store, nextState) => {
+  const changedAttrs = [];
 
-  const existing_state = state[store];
+  const existingState = state[store];
 
-  for (var attr in next_state) {
-    if (existing_state[attr] !== next_state[attr]) {
-      existing_state[attr] = next_state[attr];
-      changed_attrs.push(attr);
+  for (var attr in nextState) {
+    if (existingState[attr] !== nextState[attr]) {
+      existingState[attr] = nextState[attr];
+      changedAttrs.push(attr);
     }
   }
 
   const forceUpdatesToCall = [];
 
   for (let [obj, forceUpdate] of objStore[store].entries()) {
-    if ((!obj.watch_attrs) || watchingChanges(changed_attrs, obj.watch_attrs)) {
+    if ((!obj.watchAttrs) || watchingAttrs(changedAttrs, obj.watchAttrs)) {
       forceUpdatesToCall.push(forceUpdate);
     }
   }

@@ -1,6 +1,6 @@
 {
   "name": "set-state-is-great",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "Global store + setState + hooks integration",
   "license": "MIT",
   "main": "src/index.js",
@@ -25,7 +25,9 @@
   "peerDependencies": {
     "react": "^16.8.0"
   },
-  "dependencies": {
-    "use-force-update": "^1.0.6"
+  "devDependencies": {
+    "react": "^16.8.6",
+    "react-dom": "^16.8.6",
+    "esm": "^3.2.25"
   }
 }

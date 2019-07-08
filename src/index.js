@@ -1,4 +1,4 @@
-import useStoreState from './use_store_state.js';
+import useStoreState from './useStoreState.js';
 import {createStore, getStateHelpers} from './store.js';
 
 export {

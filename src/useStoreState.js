@@ -1,5 +1,5 @@
 import React from 'react';
-import useForceUpdate from 'use-force-update';
+import useForceUpdate from './useForceUpdate.js';
 import {getState, subscribe, unsubscribe} from './store.js';
 
 const useStoreState = (obj) => {
