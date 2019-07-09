@@ -1,7 +1,7 @@
 # Set State is Great
-<p align='center'>A global store, setState, and a hooks-based API.</p>
+<p align='center'>A global store & setState, with hooks integration.</p>
 
-Global state management without the ceremony.  No Context, Redux, Actions, Thunks, Selectors, or anything that ends in "ducer." 
+Global state management without the ceremony.  No Context, Redux, actions, thunks, selectors, or anything that ends in "ducer." 
 
 ## Installing
 
@@ -15,7 +15,7 @@ yarn add set-state-is-great
 
 ## Creating the store
 
-Set State is Great (SSiG)'s data is organized by _stores_, which are objects that represent logical groupings of data (likely pertaining to a particular component). EG: 
+Set State is Great (SSiG)'s data is organized by _stores_, which are objects that represent logical groupings of state (often pertaining to a particular component). EG: 
 
 ```javascript
 import {createStore} from 'set-state-is-great';
@@ -171,7 +171,7 @@ const {query, getState, setState} = getStateHelpers({
 
 ## Shallow compare
 
-SSiG performs a shallow comparison when setState is called.  [See here](src/store.js#L31).
+SSiG performs a shallow comparison when setState is called.  [See here](src/store.js#L30).
 
 I've thought about pushing this another level deep, and allowing stuff like `"post.title"` in `watchAttrs` ... but I've yet to encounter a need for it.  Thoughts are welcome on this.
 
@@ -203,7 +203,7 @@ setState({arr: [...arr, item]});
 Replacing easy-peasy with SSiG in my app was quite easy ... and everything seems to Just Work.
 ## How does it work?
 
-When `useStoreState` is called, a `forceUpdate` function is created (using [use-force-update][1]) and stored away (which is dereferenced upon component dismount, of course).
+When `useStoreState` is called, a `forceUpdate` function is created and stored away (which is dereferenced upon component dismount, of course).
 
 When `setState` is called, it finds all of the changed attributes for that store, then finds the objects that have those attrs in `watchAttrs`, then calls the `forceUpdate`s associated with those objects.
 
@@ -217,7 +217,6 @@ So ultimately, SSiG merely maps objects to `forceUpdate`s, and it's just a matte
 
 * Tests
 * TypeScript stuff - maybe rewrite it in TS?
-* Make my own useForceUpdate hook?  Would make this lib zero-dependency.
 * chill
 
 ## License
