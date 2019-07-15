@@ -3,8 +3,6 @@ var state, storeObj;
 const objStore = {};
 
 export const subscribe = (obj, forceUpdate) => {
-  if (objStore[obj.store].get(obj)) return;
-
   objStore[obj.store].set(obj, forceUpdate);
 };
 
@@ -42,7 +40,7 @@ const setState = (store, nextState) => {
     }
   }
 
-  for(let i = 0; i < forceUpdatesToCall.length; i++) {
+  for(let i = forceUpdatesToCall.length - 1; i >= 0; i--) {
     forceUpdatesToCall[i]();
   }
 };
@@ -58,8 +56,6 @@ const createGetState = store => () => {
 };
 
 const forceUpdateViaName = (store, name) => {
-  if (!store || !name) return;
-
   for (let [obj, forceUpdate] of objStore[store].entries()) {
     if (obj.name === name) {
       forceUpdate();
