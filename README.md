@@ -1,5 +1,5 @@
 # Set State is Great
-<p align='center'>A global store & setState, with hooks integration.</p>
+<p align='center'>A global store + setState + hooks integration.</p>
 
 Global state management without the ceremony.  No Context, Redux, actions, thunks, selectors, or anything that ends in "ducer." 
 

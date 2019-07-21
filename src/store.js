@@ -40,6 +40,11 @@ const setState = (store, nextState) => {
     }
   }
 
+  /*
+   iterate backwards to render more deeply nested components first
+   preventing potentially rendering unmounted components
+   which's probably not a problem, but causes React to throw an error
+   and nobody likes seeing red in their console */
   for(let i = forceUpdatesToCall.length - 1; i >= 0; i--) {
     forceUpdatesToCall[i]();
   }
