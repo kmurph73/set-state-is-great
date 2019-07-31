@@ -1,9 +1,9 @@
 import React from 'react';
-import useForceUpdate from './useForceUpdate.js';
+import useForceUpdateIfMounted from './useForceUpdateIfMounted.js';
 import {getState, getDynamicStateHelpers, subscribeDynamic, unsubscribeDynamic} from './store.js';
 
 const useDynamicStoreState = (obj) => {
-  subscribeDynamic(obj, useForceUpdate());
+  subscribeDynamic(obj, useForceUpdateIfMounted());
 
   React.useEffect(() => {
     return () => {
