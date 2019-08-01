@@ -169,16 +169,15 @@ const {query, getState, setState} = getStateHelpers({
 });
 ```
 
-## useDynamicStoreState
+## `useDynamicStoreState`
 For dynamic store/attr watching there's `useDynamicStoreState`:
 
 ```javascript
 import {useDynamicStoreState} from 'set-state-is-great';
 
-function NumSelect({store}) {
+function NumSelect({store, key}) {
   const {state: {val}, setState} = useDynamicStoreState({
-    key: `num-select-${store}`,
-    store: store,
+    key, store,
     watchAttrs: ['val'],
     getStateHelpers: true
   });
