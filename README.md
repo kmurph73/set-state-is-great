@@ -203,7 +203,7 @@ export default React.memo(NumSelect);
 
 ## Shallow compare
 
-SSiG performs a shallow comparison when setState is called.  [See here](src/store.js#L26).
+SSiG performs a shallow comparison when setState is called.  [See here](src/store.js#L40).
 
 ## forceUpdateViaName
 You can give the query object a name:
