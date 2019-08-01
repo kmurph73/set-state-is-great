@@ -45,7 +45,7 @@ const setState = (store, nextState) => {
   }
 
   const forceUpdatesToCall = [];
-  var forceUpdate, obj, len;
+  var forceUpdate, obj;
 
   for (let [key, value] of objStore[store].entries()) {
     if (typeof(key) === 'string') {
@@ -61,7 +61,7 @@ const setState = (store, nextState) => {
     }
   }
 
-  len = forceUpdatesToCall.length;
+  const len = forceUpdatesToCall.length;
   for(let i = 0; i < len; i++) {
     forceUpdatesToCall[i]();
   }
@@ -81,7 +81,6 @@ const forceUpdateViaName = (store, name) => {
   for (let [obj, forceUpdate] of objStore[store].entries()) {
     if (obj.name === name) {
       forceUpdate();
-      return
     }
   }
 };
