@@ -44,7 +44,7 @@ store.setState('drawer', {open: true});
 ```
 
 ## The `useStoreState` Hook
-SSiG comes with only one hook (for now): `useStoreState`:
+Hook a specific store's state into your function component with `useStoreState`:
 ```javascript
 import {useStoreState} from 'set-state-is-great';
 
@@ -169,11 +169,41 @@ const {query, getState, setState} = getStateHelpers({
 });
 ```
 
+## useDynamicStoreState
+To dynamically watch a store/attrs there's `useDynamicStoreState`:
+
+```javascript
+import {useDynamicStoreState} from 'set-state-is-great';
+
+function NumSelect({store}) {
+  const {state: {val}, setState} = useDynamicStoreState({
+    key: `num-select-${store}`,
+    store: store,
+    watchAttrs: ['val'],
+    getStateHelpers: true
+  });
+
+  const onChange = e => {
+    setState({val: e});
+  };
+
+  return (
+    <select value={val} onChange={onChange}>
+      <option value='one'>one</option>
+      <option value='two'>two</option>
+      <option value='three'>three</option>
+    </select>
+  )
+};
+
+export default React.memo(NumSelect);
+```
+
+`useDynamicStoreState` requires that you pass in a unique `key`, because we need a unique value to map the `forceUpdate` to.  `getStateHelpers` returns state, setState and getState.  If `getStateHelpers` is missing or falsey, it just returns `state` (so no need for a nested destructure like shown above).
+
 ## Shallow compare
 
-SSiG performs a shallow comparison when setState is called.  [See here](src/store.js#L30).
-
-I've thought about pushing this another level deep, and allowing stuff like `"post.title"` in `watchAttrs` ... but I've yet to encounter a need for it.  Thoughts are welcome on this.
+SSiG performs a shallow comparison when setState is called.  [See here](src/store.js#L31).
 
 ## forceUpdateViaName
 You can give the query object a name:
@@ -185,7 +215,7 @@ const query = {
 };
 ```
 
-Which you enables you to forceUpdate this component from anywhere (if it's still mounted - if not, nothing bad happens).
+Which you enables you to forceUpdate this component from anywhere (if it's still mounted - if not, it won't rerender it).
 
 ```javascript
   window.App.store.forceUpdateViaName('post', 'post_detail');
