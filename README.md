@@ -44,7 +44,7 @@ store.setState('drawer', {open: true});
 ```
 
 ## The `useStoreState` Hook
-Hook a specific store's state into your function component with `useStoreState`:
+Watch a specific store's state with `useStoreState`:
 ```javascript
 import {useStoreState} from 'set-state-is-great';
 
@@ -69,7 +69,7 @@ export default React.memo(Drawer);
 
 `watchAttrs: ['open']` tells SSiG to only rerender this function if `drawer.open` changes.
 
-However, despite only watching `open`, useStoreState returns `drawer`'s entire state.  EG, if `drawer` also a had a `rando` attr, you could grab that while you're at it:
+However, despite only watching `open`, useStoreState returns `drawer`'s entire state.  So if `drawer` also a had a `rando` attr, you could grab that while you're at it:
 
 ```javascript
 const {open, rando} = useStoreState(query);
@@ -170,7 +170,7 @@ const {query, getState, setState} = getStateHelpers({
 ```
 
 ## useDynamicStoreState
-To dynamically watch a store/attrs there's `useDynamicStoreState`:
+For dynamic store/attr watching there's `useDynamicStoreState`:
 
 ```javascript
 import {useDynamicStoreState} from 'set-state-is-great';
@@ -203,7 +203,7 @@ export default React.memo(NumSelect);
 
 ## Shallow compare
 
-SSiG performs a shallow comparison when setState is called.  [See here](src/store.js#L31).
+SSiG performs a shallow comparison when setState is called.  [See here](src/store.js#L26).
 
 ## forceUpdateViaName
 You can give the query object a name:
@@ -233,7 +233,7 @@ setState({arr: [...arr, item]});
 Replacing easy-peasy with SSiG in my app was quite easy ... and everything seems to Just Work.
 ## How does it work?
 
-When `useStoreState` is called, a `forceUpdate` function is created and stored away (which is dereferenced upon component dismount, of course).
+When `use(Dynamic)StoreState` is called, a `forceUpdate` function is created and stored away (which is dereferenced upon component dismount, of course).
 
 When `setState` is called, it finds all of the changed attributes for that store, then finds the objects that have those attrs in `watchAttrs`, then calls the `forceUpdate`s associated with those objects.
 
