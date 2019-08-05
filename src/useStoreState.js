@@ -1,9 +1,9 @@
 import React from 'react';
-import useForceUpdate from './useForceUpdate.js';
+import useForceUpdateIfMounted from './useForceUpdateIfMounted.js';
 import {getState, subscribe, unsubscribe} from './store.js';
 
 const useStoreState = (obj) => {
-  subscribe(obj, useForceUpdate());
+  subscribe(obj, useForceUpdateIfMounted());
 
   React.useEffect(() => {
     return () => {
