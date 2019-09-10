@@ -23,11 +23,15 @@
     "hooks"
   ],
   "peerDependencies": {
-    "react": "^16.8.0"
+    "react": "^16.9.0"
   },
   "devDependencies": {
-    "react": "^16.8.6",
-    "react-dom": "^16.8.6",
-    "esm": "^3.2.25"
+    "esm": "^3.2.25",
+    "react": "^16.9.0",
+    "react-dom": "^16.9.0",
+    "typescript": "^3.6.3"
+  },
+  "dependencies": {
+    "@types/react": "^16.9.2"
   }
 }
