@@ -1,6 +1,6 @@
 import React from 'react';
 import useForceUpdateIfMounted from './useForceUpdateIfMounted';
-import {QueryObject} from '../index';
+import {QueryObject} from './types';
 import {getState, subscribe, unsubscribe} from './store';
 
 /**

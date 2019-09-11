@@ -1,5 +1,5 @@
 import React, {useEffect, useRef} from 'react';
-import {ForceUpdateIfMounted} from '../index';
+import {ForceUpdateIfMounted} from './types';
 
 const useForceUpdateIfMounted = (): ForceUpdateIfMounted => {
   // isMounted borrowed from https://github.com/jmlweb/isMounted
