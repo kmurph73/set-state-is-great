@@ -5,7 +5,7 @@ export interface QueryObject {
 }
 
 export interface StateObj {
-  [s: string]: plainObject; 
+  [s: string]: PlainObject; 
 }
 
 export interface PlainObject {

@@ -1,4 +1,4 @@
-import {StateObj, ForceUpdateIfMounted, QueryObject, PlainObject} from './types';
+import {StateObj, ForceUpdateIfMounted, QueryObject, PlainObject} from '../index';
 
 var state: StateObj;
 
