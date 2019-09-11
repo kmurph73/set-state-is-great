@@ -3,13 +3,14 @@
   "version": "0.0.4",
   "description": "Global store + setState + hooks integration",
   "license": "MIT",
-  "main": "src/index.js",
+  "main": "lib/index.js",
   "files": [
-    "src",
+    "lib",
     "index.js"
   ],
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "tsc"
   },
   "repository": {
     "type": "git",
@@ -23,15 +24,13 @@
     "hooks"
   ],
   "peerDependencies": {
-    "react": "^16.9.0"
+    "react": "^16.8.0"
   },
   "devDependencies": {
     "esm": "^3.2.25",
-    "react": "^16.9.0",
-    "react-dom": "^16.9.0",
-    "typescript": "^3.6.3"
-  },
-  "dependencies": {
+    "react": "^16.8.6",
+    "react-dom": "^16.8.6",
+    "typescript": "^3.6.3",
     "@types/react": "^16.9.2"
   }
 }

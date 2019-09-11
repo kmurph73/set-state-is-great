@@ -1,14 +1,14 @@
-export interface queryObject {
+export interface QueryObject {
   store: string;
   watchAttrs: Array<string> | null;
   name?: string;
 }
 
-export interface stateObj {
+export interface StateObj {
   [s: string]: plainObject; 
 }
 
-export interface plainObject {
+export interface PlainObject {
   [s: string]: any
 }
 
@@ -17,4 +17,4 @@ export interface plainObject {
 // however, our forceUpdate expects nothing to be passed in
 // so, this is a hack to make passing in a value to useReducer optional
 // HT: https://stackoverflow.com/a/44101728/548170
-export type forceUpdateIfMounted = Partial<React.Dispatch<unknown>> & ((value?: any) => void);
+export type ForceUpdateIfMounted = Partial<React.Dispatch<unknown>> & ((value?: any) => void);

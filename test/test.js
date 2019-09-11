@@ -1,6 +1,6 @@
 // node -r esm test/test.js
 // https://stackoverflow.com/a/54090097
-import {createStore} from '../src/index.js';
+import {createStore} from '../lib/index.js';
 
 const store = createStore({
   one: {1: 1},
