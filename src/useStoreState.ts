@@ -1,7 +1,7 @@
 import React from 'react';
 import useForceUpdateIfMounted from './useForceUpdateIfMounted';
-import {QueryObject} from './types';
-import {getState, subscribe, unsubscribe} from './store';
+import { QueryObject, PlainObject } from './types';
+import { getState, subscribe, unsubscribe } from './store';
 
 /**
  * access and observe changes to a store's state
@@ -15,7 +15,7 @@ import {getState, subscribe, unsubscribe} from './store';
  *   store: 'drawer',
  *   watchAttrs: ['open']
  * };
- * 
+ *
  * function Drawer() {
  *   const {open} = useStoreState(query);
  *   return (
@@ -25,16 +25,17 @@ import {getState, subscribe, unsubscribe} from './store';
  *   )
  * }
  */
-const useStoreState = (obj: QueryObject) => {
+const useStoreState = (obj: QueryObject): PlainObject => {
   subscribe(obj, useForceUpdateIfMounted());
 
-  React.useEffect(() => {
-    return () => {
+  React.useEffect(
+    () => (): void => {
       unsubscribe(obj);
-    };
-  }, [obj]);
+    },
+    [obj],
+  );
 
   return getState(obj.store);
-}
+};
 
 export default useStoreState;

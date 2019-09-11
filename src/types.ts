@@ -5,11 +5,19 @@ export interface QueryObject {
 }
 
 export interface StateObj {
-  [s: string]: PlainObject; 
+  [s: string]: PlainObject;
 }
 
 export interface PlainObject {
-  [s: string]: any
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  [s: string]: any;
+}
+
+export interface StateHelpers {
+  query: QueryObject;
+  getState: () => PlainObject;
+  setState: (state: PlainObject) => void;
+  assignState: (state: PlainObject) => void;
 }
 
 export interface Store {
@@ -25,4 +33,4 @@ export interface Store {
 // however, our forceUpdate expects nothing to be passed in
 // so, this is a hack to make passing in a value to useReducer optional
 // HT: https://stackoverflow.com/a/44101728/548170
-export type ForceUpdateIfMounted = Partial<React.Dispatch<unknown>> & ((value?: any) => void);
+export type ForceUpdateIfMounted = Partial<React.Dispatch<unknown>> & ((value?: unknown) => void);

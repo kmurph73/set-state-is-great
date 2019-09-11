@@ -1,22 +1,22 @@
-import {StateObj, ForceUpdateIfMounted, QueryObject, PlainObject, Store} from './types';
+import { StateObj, ForceUpdateIfMounted, QueryObject, PlainObject, Store, StateHelpers } from './types';
 
-var state: StateObj;
+let state: StateObj;
 
 interface ObjStore {
-  [s: string]: Map<QueryObject, ForceUpdateIfMounted>; 
+  [s: string]: Map<QueryObject, ForceUpdateIfMounted>;
 }
 
 const objStore: ObjStore = {};
 
-export const subscribe = (obj: QueryObject, forceUpdate: ForceUpdateIfMounted) => {
+export const subscribe = (obj: QueryObject, forceUpdate: ForceUpdateIfMounted): void => {
   objStore[obj.store].set(obj, forceUpdate);
 };
 
-export const unsubscribe = (obj: QueryObject) => {
+export const unsubscribe = (obj: QueryObject): void => {
   objStore[obj.store].delete(obj);
 };
 
-const watchingAttrs = (changedAttrs: Array<string>, watchAttrs: Array<string>): Boolean => {
+const watchingAttrs = (changedAttrs: Array<string>, watchAttrs: Array<string>): boolean => {
   for (let i = 0; i < changedAttrs.length; i++) {
     if (watchAttrs.includes(changedAttrs[i])) {
       return true;
@@ -28,22 +28,22 @@ const watchingAttrs = (changedAttrs: Array<string>, watchAttrs: Array<string>): 
 
 /**
  * get the core state object that contains all of the stores
- * 
+ *
  * https://github.com/kmurph73/set-state-is-great#getfullstate
- * 
+ *
  * @example
  *  store.getFullState();
  *
  */
-const getFullState = (store: string): StateObj => state;
+const getFullState = (): StateObj => state;
 
 /**
  * replace the state of a store
- * 
+ *
  * rerenders components watching any of the attrs that have differing values between the previous and next state
- * 
+ *
  * https://github.com/kmurph73/set-state-is-great#assignstate
- * 
+ *
  * @example
  *  store.assignState('modal', {open: true, title: 'muh modal'});
  *
@@ -55,7 +55,7 @@ const assignState = (store: string, nextState: PlainObject): void => {
 
   const allAttrs = new Set(Object.keys(nextState).concat(Object.keys(existingState)));
 
-  allAttrs.forEach((attr) => {
+  allAttrs.forEach(attr => {
     if (existingState[attr] !== nextState[attr]) {
       changedAttrs.push(attr);
     }
@@ -65,23 +65,23 @@ const assignState = (store: string, nextState: PlainObject): void => {
 
   const forceUpdatesToCall: Array<ForceUpdateIfMounted> = [];
 
-  for (let [obj, forceUpdate] of objStore[store].entries()) {
-    if ((!obj.watchAttrs) || watchingAttrs(changedAttrs, obj.watchAttrs)) {
+  for (const [obj, forceUpdate] of objStore[store].entries()) {
+    if (!obj.watchAttrs || watchingAttrs(changedAttrs, obj.watchAttrs)) {
       forceUpdatesToCall.push(forceUpdate);
     }
   }
 
   const len = forceUpdatesToCall.length;
-  for(let i = 0; i < len; i++) {
+  for (let i = 0; i < len; i++) {
     forceUpdatesToCall[i]();
   }
 };
 
 /**
  * *assign* values to a store.  if you want to replace the object in a store, there's assignState
- * 
+ *
  * https://github.com/kmurph73/set-state-is-great#setstate
- * 
+ *
  * @example
  *  store.setState('drawer', {open: true});
  *
@@ -91,8 +91,8 @@ const setState = (store: string, nextState: PlainObject): void => {
 
   const existingState = state[store];
 
-  for (var attr in nextState) {
-      if (existingState[attr] !== nextState[attr]) {
+  for (const attr in nextState) {
+    if (existingState[attr] !== nextState[attr]) {
       existingState[attr] = nextState[attr];
       changedAttrs.push(attr);
     }
@@ -100,14 +100,14 @@ const setState = (store: string, nextState: PlainObject): void => {
 
   const forceUpdatesToCall: Array<ForceUpdateIfMounted> = [];
 
-  for (let [obj, forceUpdate] of objStore[store].entries()) {
-    if ((!obj.watchAttrs) || watchingAttrs(changedAttrs, obj.watchAttrs)) {
+  for (const [obj, forceUpdate] of objStore[store].entries()) {
+    if (!obj.watchAttrs || watchingAttrs(changedAttrs, obj.watchAttrs)) {
       forceUpdatesToCall.push(forceUpdate);
     }
   }
 
   const len = forceUpdatesToCall.length;
-  for(let i = 0; i < len; i++) {
+  for (let i = 0; i < len; i++) {
     forceUpdatesToCall[i]();
   }
 };
@@ -119,19 +119,17 @@ const setState = (store: string, nextState: PlainObject): void => {
  *
  * @example
  *  store.getState('drawer');
- * 
+ *
  */
-export const getState = (store: string) => state[store];
+export const getState = (store: string): PlainObject => state[store];
 
-const createSetState = (store: string) => (state: PlainObject) => {
+const createSetState = (store: string) => (state: PlainObject): void => {
   setState(store, state);
 };
 
-const createGetState = (store: string) => () => {
-  return getState(store);
-};
+const createGetState = (store: string) => (): PlainObject => getState(store);
 
-const createAssignState = (store: string) => (state: PlainObject) => {
+const createAssignState = (store: string) => (state: PlainObject): void => {
   assignState(store, state);
 };
 
@@ -142,26 +140,26 @@ const createAssignState = (store: string) => (state: PlainObject) => {
  *
  * @example
  *  window.App.store.forceUpdateViaName('post', 'post_detail');
- * 
+ *
  */
-const forceUpdateViaName = (store: string, name: string) => {
-  for (let [obj, forceUpdate] of objStore[store].entries()) {
+const forceUpdateViaName = (store: string, name: string): void => {
+  for (const [obj, forceUpdate] of objStore[store].entries()) {
     if (obj.name === name) {
       forceUpdate();
-      return
+      return;
     }
   }
 };
 
 /**
- * Create the central store of your app (composed of smaller stores - 
+ * Create the central store of your app (composed of smaller stores -
  * EG `main`, `drawer`, `home` shown below)
  *
  * https://github.com/kmurph73/set-state-is-great#creating-the-store
  *
  * @example
  *  import {createStore} from 'set-state-is-great';
- * 
+ *
  *  const store = createStore({
  *    main: {viewShown: 'Home'},
  *    drawer: {open: false},
@@ -171,11 +169,17 @@ const forceUpdateViaName = (store: string, name: string) => {
 export const createStore = (initialState: PlainObject): Store => {
   state = initialState;
 
-  for (var store in initialState) {
+  for (const store in initialState) {
     objStore[store] = new Map();
   }
 
-  return { getFullState, setState, getState, assignState, forceUpdateViaName };
+  return {
+    getFullState,
+    setState,
+    getState,
+    assignState,
+    forceUpdateViaName,
+  };
 };
 
 /**
@@ -185,17 +189,15 @@ export const createStore = (initialState: PlainObject): Store => {
  *
  * @example
  * import {getStateHelpers} from 'set-state-is-great';
- * 
+ *
  * const {query, getState, setState} = getStateHelpers({
  *   store: 'drawer',
  *   watchAttrs: ['open']
  * });
  */
-export const getStateHelpers = (query: QueryObject) => {
-  return {
-    query: query,
-    getState: createGetState(query.store),
-    setState: createSetState(query.store),
-    assignState: createAssignState(query.store)
-  }
-};
+export const getStateHelpers = (query: QueryObject): StateHelpers => ({
+  query,
+  getState: createGetState(query.store),
+  setState: createSetState(query.store),
+  assignState: createAssignState(query.store),
+});
