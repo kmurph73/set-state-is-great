@@ -1,5 +1,5 @@
-import useStoreState from './useStoreState.js';
-import {createStore, getStateHelpers} from './store.js';
+import useStoreState from './useStoreState';
+import {createStore, getStateHelpers} from './store';
 export * from './types';
 
 export {

@@ -1,6 +1,6 @@
 import React from 'react';
 import useForceUpdateIfMounted from './useForceUpdateIfMounted';
-import {queryObject} from './types';
+import {QueryObject} from './types';
 import {getState, subscribe, unsubscribe} from './store';
 
 /**
@@ -25,7 +25,7 @@ import {getState, subscribe, unsubscribe} from './store';
  *   )
  * }
  */
-const useStoreState = (obj: queryObject) => {
+const useStoreState = (obj: QueryObject) => {
   subscribe(obj, useForceUpdateIfMounted());
 
   React.useEffect(() => {
