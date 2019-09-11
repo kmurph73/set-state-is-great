@@ -5,6 +5,7 @@
   "license": "MIT",
   "types": "./index.d.ts",
   "files": [
+    "index.d.ts",
     "lib",
     "src"
   ],
