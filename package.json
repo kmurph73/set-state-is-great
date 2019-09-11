@@ -3,7 +3,8 @@
   "version": "0.0.4",
   "description": "Global store + setState + hooks integration",
   "license": "MIT",
-  "types": "./src/types.ts",
+  "types": "./src/index.ts",
+  "main": "./lib/index.js",
   "files": [
     "lib",
     "src"
