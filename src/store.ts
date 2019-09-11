@@ -1,4 +1,4 @@
-import {StateObj, ForceUpdateIfMounted, QueryObject, PlainObject} from './types';
+import {StateObj, ForceUpdateIfMounted, QueryObject, PlainObject, Store} from './types';
 
 var state: StateObj;
 
@@ -168,7 +168,7 @@ const forceUpdateViaName = (store: string, name: string) => {
  *    home: {title: 'Home'}
  *  });
  */
-export const createStore = (initialState: PlainObject) => {
+export const createStore = (initialState: PlainObject): Store => {
   state = initialState;
 
   for (var store in initialState) {

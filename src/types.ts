@@ -12,6 +12,14 @@ export interface PlainObject {
   [s: string]: any
 }
 
+export interface Store {
+  getFullState: (store: string) => StateObj;
+  setState: (store: string, nextState: PlainObject) => void;
+  getState: (store: string) => PlainObject;
+  assignState: (store: string, nextState: PlainObject) => void;
+  forceUpdateViaName: (store: string, name: string) => void;
+}
+
 // React's TS signature for useReducer requires a variable be passed in
 // https://github.com/DefinitelyTyped/DefinitelyTyped/blob/master/types/react/index.d.ts#L802
 // however, our forceUpdate expects nothing to be passed in
