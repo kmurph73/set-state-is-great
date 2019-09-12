@@ -1,6 +1,6 @@
 export interface QueryObject {
   store: string;
-  watchAttrs: Array<string> | null;
+  watchAttrs?: Array<string> | null;
   name?: string;
 }
 
