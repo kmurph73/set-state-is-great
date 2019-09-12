@@ -169,11 +169,26 @@ const {query, getState, setState} = getStateHelpers({
 });
 ```
 
+## assignState
+
+To *replace* a store's entire state, use `assignState` (`setState` merely assigns the new values to the existing object)
+
+```javascript
+store.assignState('modal', {open: true, title: 'other'});
+```
+
+## getFullState
+
+Get the central state object that holds all of the stores.
+
+```javascript
+const allStores = store.getFullState();
+allStores.modal // {open: true, title: 'other'} 
+```
+
 ## Shallow compare
 
 SSiG performs a shallow comparison when setState is called.  [See here](src/store.js#L30).
-
-I've thought about pushing this another level deep, and allowing stuff like `"post.title"` in `watchAttrs` ... but I've yet to encounter a need for it.  Thoughts are welcome on this.
 
 ## forceUpdateViaName
 You can give the query object a name:
