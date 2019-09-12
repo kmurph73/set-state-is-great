@@ -2,18 +2,23 @@ import { StateObj, ForceUpdateIfMounted, QueryObject, PlainObject, Store, StateH
 
 let state: StateObj;
 
+interface ObjHold {
+  obj: QueryObject;
+  forceUpdate: ForceUpdateIfMounted;
+}
+
 interface ObjStore {
-  [s: string]: Map<QueryObject, ForceUpdateIfMounted>;
+  [s: string]: Map<string, ObjHold>;
 }
 
 const objStore: ObjStore = {};
 
 export const subscribe = (obj: QueryObject, forceUpdate: ForceUpdateIfMounted): void => {
-  objStore[obj.store].set(obj, forceUpdate);
+  objStore[obj.store].set(obj.key, { obj, forceUpdate });
 };
 
 export const unsubscribe = (obj: QueryObject): void => {
-  objStore[obj.store].delete(obj);
+  objStore[obj.store].delete(obj.key);
 };
 
 const watchingAttrs = (changedAttrs: Array<string>, watchAttrs: Array<string>): boolean => {
@@ -65,7 +70,8 @@ const assignState = (store: string, nextState: PlainObject): void => {
 
   const forceUpdatesToCall: Array<ForceUpdateIfMounted> = [];
 
-  for (const [obj, forceUpdate] of objStore[store].entries()) {
+  /* eslint-disable-next-line @typescript-eslint/no-unused-vars */
+  for (const [key, { obj, forceUpdate }] of objStore[store].entries()) {
     if (!obj.watchAttrs || watchingAttrs(changedAttrs, obj.watchAttrs)) {
       forceUpdatesToCall.push(forceUpdate);
     }
@@ -100,7 +106,8 @@ const setState = (store: string, nextState: PlainObject): void => {
 
   const forceUpdatesToCall: Array<ForceUpdateIfMounted> = [];
 
-  for (const [obj, forceUpdate] of objStore[store].entries()) {
+  /* eslint-disable-next-line @typescript-eslint/no-unused-vars */
+  for (const [key, { obj, forceUpdate }] of objStore[store].entries()) {
     if (!obj.watchAttrs || watchingAttrs(changedAttrs, obj.watchAttrs)) {
       forceUpdatesToCall.push(forceUpdate);
     }
@@ -143,7 +150,8 @@ const createAssignState = (store: string) => (state: PlainObject): void => {
  *
  */
 const forceUpdateViaName = (store: string, name: string): void => {
-  for (const [obj, forceUpdate] of objStore[store].entries()) {
+  /* eslint-disable-next-line @typescript-eslint/no-unused-vars */
+  for (const [key, { obj, forceUpdate }] of objStore[store].entries()) {
     if (obj.name === name) {
       forceUpdate();
       return;
