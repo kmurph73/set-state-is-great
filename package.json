@@ -1,6 +1,6 @@
 {
   "name": "set-state-is-great",
-  "version": "0.0.5",
+  "version": "0.0.6",
   "description": "Global store + setState + hooks integration",
   "license": "MIT",
   "types": "./src/index.ts",
@@ -38,14 +38,12 @@
     "eslint-config-prettier": "^6.3.0",
     "eslint-plugin-import": "^2.18.2",
     "eslint-plugin-prettier": "^3.1.0",
+    "eslint-plugin-react": "^7.14.3",
+    "eslint-plugin-react-hooks": "^2.0.1",
+    "prettier": "^1.18.2",
     "esm": "^3.2.25",
     "react": "^16.8.6",
     "react-dom": "^16.8.6",
     "typescript": "^3.6.3"
-  },
-  "dependencies": {
-    "eslint-plugin-react": "^7.14.3",
-    "eslint-plugin-react-hooks": "^2.0.1",
-    "prettier": "^1.18.2"
   }
 }

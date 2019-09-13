@@ -1,7 +1,7 @@
 # Set State is Great
 <p align='center'>A global store + setState + hooks integration.</p>
 
-Global state management without the ceremony.  No Context, Redux, actions, thunks, selectors, or anything that ends in "ducer." 
+Global state management without the ceremony.  No Context, Redux, actions, thunks, selectors, or anything that ends in "ducer."  Zero dependency (other than React of course).  [And now written in TypeScript!](https://github.com/kmurph73/set-state-is-great/pull/3)
 
 ## Installing
 
@@ -44,7 +44,7 @@ store.setState('drawer', {open: true});
 ```
 
 ## The `useStoreState` Hook
-SSiG comes with only one hook (for now): `useStoreState`:
+Watch a known store's state with `useStoreState`:
 ```javascript
 import {useStoreState} from 'set-state-is-great';
 
@@ -69,7 +69,7 @@ export default React.memo(Drawer);
 
 `watchAttrs: ['open']` tells SSiG to only rerender this function if `drawer.open` changes.
 
-However, despite only watching `open`, useStoreState returns `drawer`'s entire state.  EG, if `drawer` also a had a `rando` attr, you could grab that while you're at it:
+However, despite only watching `open`, useStoreState returns `drawer`'s entire state.  So if `drawer` also a had a `rando` attr, you could grab that while you're at it:
 
 ```javascript
 const {open, rando} = useStoreState(query);
@@ -78,6 +78,9 @@ or just the entire state object:
 ```javascript
 const drawerState = useStoreState(query);
 ```
+
+For dynamic store/attr watching, there's [useDynamicStoreState](#usedynamicstorestate)
+
 
 ## getStateHelpers
 
@@ -169,6 +172,37 @@ const {query, getState, setState} = getStateHelpers({
 });
 ```
 
+## `useDynamicStoreState`
+Dynamically watch a store/attrs with `useDynamicStoreState`:
+
+```javascript
+import {useDynamicStoreState} from 'set-state-is-great';
+
+function NumSelect({store, key}) {
+  const {state: {val}, setState} = useDynamicStoreState({
+    key, store,
+    watchAttrs: ['val'],
+    getStateHelpers: true
+  });
+
+  const onChange = e => {
+    setState({val: e});
+  };
+
+  return (
+    <select value={val} onChange={onChange}>
+      <option value='one'>one</option>
+      <option value='two'>two</option>
+      <option value='three'>three</option>
+    </select>
+  )
+};
+
+export default React.memo(NumSelect);
+```
+
+`useDynamicStoreState` requires that you pass in a unique `key`, because we need a unique value to map the `forceUpdate` to.  `getStateHelpers` returns state, setState and getState.  If `getStateHelpers` is missing or falsey, it just returns `state` (so no need for a nested destructure like shown above).
+
 ## assignState
 
 To *replace* a store's entire state, use `assignState` (`setState` merely assigns the new values to the existing object)
@@ -188,7 +222,7 @@ allStores.modal // {open: true, title: 'other'}
 
 ## Shallow compare
 
-SSiG performs a shallow comparison when setState is called.  [See here](src/store.js#L30).
+SSiG performs a shallow comparison when setState is called.  [See here](src/store.ts#L117).
 
 ## forceUpdateViaName
 You can give the query object a name:
@@ -200,7 +234,7 @@ const query = {
 };
 ```
 
-Which you enables you to forceUpdate this component from anywhere (if it's still mounted - if not, nothing bad happens).
+Which you enables you to forceUpdate this component from anywhere (if it's still mounted - if not, it won't rerender it).
 
 ```javascript
   window.App.store.forceUpdateViaName('post', 'post_detail');
@@ -218,7 +252,7 @@ setState({arr: [...arr, item]});
 Replacing easy-peasy with SSiG in my app was quite easy ... and everything seems to Just Work.
 ## How does it work?
 
-When `useStoreState` is called, a `forceUpdate` function is created and stored away (which is dereferenced upon component dismount, of course).
+When `use(Dynamic)StoreState` is called, a `forceUpdate` function is created and stored away (which is dereferenced upon component dismount, of course).
 
 When `setState` is called, it finds all of the changed attributes for that store, then finds the objects that have those attrs in `watchAttrs`, then calls the `forceUpdate`s associated with those objects.
 
@@ -231,7 +265,6 @@ So ultimately, SSiG merely maps objects to `forceUpdate`s, and it's just a matte
 ## Todo
 
 * Tests
-* TypeScript stuff - maybe rewrite it in TS?
 * chill
 
 ## License

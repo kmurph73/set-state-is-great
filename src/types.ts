@@ -4,6 +4,14 @@ export interface QueryObject {
   name?: string;
 }
 
+export interface DynamicQueryObject {
+  store: string;
+  key: string;
+  getStateHelpers?: boolean;
+  watchAttrs?: Array<string> | null;
+  name?: string;
+}
+
 export interface StateObj {
   [s: string]: PlainObject;
 }
@@ -20,6 +28,13 @@ export interface StateHelpers {
   assignState: (state: PlainObject) => void;
 }
 
+export interface DynamicStateHelpers {
+  state: PlainObject;
+  getState: (store: string) => PlainObject;
+  setState: (state: PlainObject) => void;
+  assignState: (state: PlainObject) => void;
+}
+
 export interface Store {
   getFullState: (store: string) => StateObj;
   setState: (store: string, nextState: PlainObject) => void;
@@ -28,7 +43,7 @@ export interface Store {
   forceUpdateViaName: (store: string, name: string) => void;
 }
 
-// React's TS signature for useReducer requires a variable be passed in
+// React's TS signature for useReducer has a required argument
 // https://github.com/DefinitelyTyped/DefinitelyTyped/blob/master/types/react/index.d.ts#L802
 // however, our forceUpdate expects nothing to be passed in
 // so, this is a hack to make passing in a value to useReducer optional

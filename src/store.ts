@@ -1,19 +1,41 @@
-import { StateObj, ForceUpdateIfMounted, QueryObject, PlainObject, Store, StateHelpers } from './types';
+import {
+  StateObj,
+  ForceUpdateIfMounted,
+  QueryObject,
+  PlainObject,
+  Store,
+  StateHelpers,
+  DynamicStateHelpers,
+  DynamicQueryObject,
+} from './types';
 
 let state: StateObj;
 
+interface ObjHold {
+  obj: QueryObject | DynamicQueryObject;
+  forceUpdate: ForceUpdateIfMounted;
+}
+
 interface ObjStore {
-  [s: string]: Map<QueryObject, ForceUpdateIfMounted>;
+  [s: string]: Map<QueryObject | string, ObjHold>;
 }
 
 const objStore: ObjStore = {};
 
 export const subscribe = (obj: QueryObject, forceUpdate: ForceUpdateIfMounted): void => {
-  objStore[obj.store].set(obj, forceUpdate);
+  objStore[obj.store].set(obj, { obj, forceUpdate });
 };
 
 export const unsubscribe = (obj: QueryObject): void => {
   objStore[obj.store].delete(obj);
+};
+
+export const subscribeDynamic = (obj: DynamicQueryObject, forceUpdate: ForceUpdateIfMounted): void => {
+  objStore[obj.store].set(obj.key, { obj, forceUpdate });
+};
+
+export const unsubscribeDynamic = (key: string, store: string): void => {
+  objStore[store].delete(key);
 };
 
 const watchingAttrs = (changedAttrs: Array<string>, watchAttrs: Array<string>): boolean => {
@@ -65,7 +87,8 @@ const assignState = (store: string, nextState: PlainObject): void => {
 
   const forceUpdatesToCall: Array<ForceUpdateIfMounted> = [];
 
-  for (const [obj, forceUpdate] of objStore[store].entries()) {
+  /* eslint-disable-next-line @typescript-eslint/no-unused-vars */
+  for (const [objOrKey, { obj, forceUpdate }] of objStore[store].entries()) {
     if (!obj.watchAttrs || watchingAttrs(changedAttrs, obj.watchAttrs)) {
       forceUpdatesToCall.push(forceUpdate);
     }
@@ -100,7 +123,8 @@ const setState = (store: string, nextState: PlainObject): void => {
 
   const forceUpdatesToCall: Array<ForceUpdateIfMounted> = [];
 
-  for (const [obj, forceUpdate] of objStore[store].entries()) {
+  /* eslint-disable-next-line @typescript-eslint/no-unused-vars */
+  for (const [objOrKey, { obj, forceUpdate }] of objStore[store].entries()) {
     if (!obj.watchAttrs || watchingAttrs(changedAttrs, obj.watchAttrs)) {
       forceUpdatesToCall.push(forceUpdate);
     }
@@ -143,7 +167,8 @@ const createAssignState = (store: string) => (state: PlainObject): void => {
  *
  */
 const forceUpdateViaName = (store: string, name: string): void => {
-  for (const [obj, forceUpdate] of objStore[store].entries()) {
+  /* eslint-disable-next-line @typescript-eslint/no-unused-vars */
+  for (const [objOrKey, { obj, forceUpdate }] of objStore[store].entries()) {
     if (obj.name === name) {
       forceUpdate();
       return;
@@ -201,3 +226,12 @@ export const getStateHelpers = (query: QueryObject): StateHelpers => ({
   setState: createSetState(query.store),
   assignState: createAssignState(query.store),
 });
+
+export const getDynamicStateHelpers = (query: DynamicQueryObject): DynamicStateHelpers => {
+  return {
+    state: getState(query.store),
+    getState: createGetState(query.store),
+    setState: createSetState(query.store),
+    assignState: createAssignState(query.store),
+  };
+};
