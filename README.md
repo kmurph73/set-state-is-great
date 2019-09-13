@@ -211,6 +211,8 @@ To *replace* a store's entire state, use `assignState` (`setState` merely assign
 store.assignState('modal', {open: true, title: 'other'});
 ```
 
+`assignState` will find any differing values between between the two states, and `forceUpdate` any components watching the changed attrs.
+
 ## getFullState
 
 Get the central state object that holds all of the stores.
