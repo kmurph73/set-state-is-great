@@ -200,6 +200,23 @@ export default React.memo(NumSelect);
 
 `useDynamicStoreState` requires that you pass in a unique `key`, because we need a unique value to map the `forceUpdate` to.  `getStateHelpers` returns state, setState and getState.  If `getStateHelpers` is missing or falsey, it just returns `state` (so no need for a nested destructure like shown above).
 
+## assignState
+
+To *replace* a store's entire state, use `assignState` (`setState` merely assigns the new values to the existing object)
+
+```javascript
+store.assignState('modal', {open: true, title: 'other'});
+```
+
+## getFullState
+
+Get the central state object that holds all of the stores.
+
+```javascript
+const allStores = store.getFullState();
+allStores.modal // {open: true, title: 'other'} 
+```
+
 ## Shallow compare
 
 SSiG performs a shallow comparison when setState is called.  [See here](src/store.js#L40).
