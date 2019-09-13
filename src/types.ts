@@ -7,6 +7,7 @@ export interface QueryObject {
 export interface DynamicQueryObject {
   store: string;
   key: string;
+  getStateHelpers?: boolean;
   watchAttrs?: Array<string> | null;
   name?: string;
 }
@@ -23,6 +24,13 @@ export interface PlainObject {
 export interface StateHelpers {
   query: QueryObject;
   getState: () => PlainObject;
+  setState: (state: PlainObject) => void;
+  assignState: (state: PlainObject) => void;
+}
+
+export interface DynamicStateHelpers {
+  state: PlainObject;
+  getState: (store: string) => PlainObject;
   setState: (state: PlainObject) => void;
   assignState: (state: PlainObject) => void;
 }

@@ -5,6 +5,7 @@ import {
   PlainObject,
   Store,
   StateHelpers,
+  DynamicStateHelpers,
   DynamicQueryObject,
 } from './types';
 
@@ -122,6 +123,7 @@ const setState = (store: string, nextState: PlainObject): void => {
 
   const forceUpdatesToCall: Array<ForceUpdateIfMounted> = [];
 
+  /* eslint-disable-next-line @typescript-eslint/no-unused-vars */
   for (const [objOrKey, { obj, forceUpdate }] of objStore[store].entries()) {
     if (!obj.watchAttrs || watchingAttrs(changedAttrs, obj.watchAttrs)) {
       forceUpdatesToCall.push(forceUpdate);
@@ -165,6 +167,7 @@ const createAssignState = (store: string) => (state: PlainObject): void => {
  *
  */
 const forceUpdateViaName = (store: string, name: string): void => {
+  /* eslint-disable-next-line @typescript-eslint/no-unused-vars */
   for (const [objOrKey, { obj, forceUpdate }] of objStore[store].entries()) {
     if (obj.name === name) {
       forceUpdate();
@@ -223,3 +226,12 @@ export const getStateHelpers = (query: QueryObject): StateHelpers => ({
   setState: createSetState(query.store),
   assignState: createAssignState(query.store),
 });
+
+export const getDynamicStateHelpers = (query: DynamicQueryObject): DynamicStateHelpers => {
+  return {
+    state: getState(query.store),
+    getState: createGetState(query.store),
+    setState: createSetState(query.store),
+    assignState: createAssignState(query.store),
+  };
+};

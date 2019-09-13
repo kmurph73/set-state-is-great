@@ -1,7 +1,7 @@
 import React from 'react';
 import useForceUpdateIfMounted from './useForceUpdateIfMounted';
 import { PlainObject, DynamicQueryObject } from './types';
-import { getState, subscribeDynamic, unsubscribeDynamic } from './store';
+import { getState, subscribeDynamic, unsubscribeDynamic, getDynamicStateHelpers } from './store';
 
 const useDynamicStoreState = (obj: DynamicQueryObject): PlainObject => {
   subscribeDynamic(obj, useForceUpdateIfMounted());
@@ -11,6 +11,12 @@ const useDynamicStoreState = (obj: DynamicQueryObject): PlainObject => {
       unsubscribeDynamic(obj.key, obj.store);
     };
   }, [obj.key, obj.store]);
+
+  if (obj.getStateHelpers) {
+    return getDynamicStateHelpers(obj);
+  } else {
+    return getState(obj.store);
+  }
 
   return getState(obj.store);
 };
