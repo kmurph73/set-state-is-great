@@ -173,7 +173,7 @@ const {query, getState, setState} = getStateHelpers({
 ```
 
 ## `useDynamicStoreState`
-For dynamic store/attr watching there's `useDynamicStoreState`:
+Dynamically watch a store/attrs with `useDynamicStoreState`:
 
 ```javascript
 import {useDynamicStoreState} from 'set-state-is-great';
