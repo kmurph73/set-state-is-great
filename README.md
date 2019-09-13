@@ -1,7 +1,7 @@
 # Set State is Great
 <p align='center'>A global store + setState + hooks integration.</p>
 
-Global state management without the ceremony.  No Context, Redux, actions, thunks, selectors, or anything that ends in "ducer." 
+Global state management without the ceremony.  No Context, Redux, actions, thunks, selectors, or anything that ends in "ducer."  Zero dependency (other than React of course).  [And now written in TypeScript!](https://github.com/kmurph73/set-state-is-great/pull/3)
 
 ## Installing
 
@@ -44,7 +44,7 @@ store.setState('drawer', {open: true});
 ```
 
 ## The `useStoreState` Hook
-Watch a specific store's state with `useStoreState`:
+Watch a known store's state with `useStoreState`:
 ```javascript
 import {useStoreState} from 'set-state-is-great';
 
@@ -78,6 +78,9 @@ or just the entire state object:
 ```javascript
 const drawerState = useStoreState(query);
 ```
+
+For dynamic store/attr watching, there's [useDynamicStoreState](#usedynamicstorestate)
+
 
 ## getStateHelpers
 
@@ -219,7 +222,7 @@ allStores.modal // {open: true, title: 'other'}
 
 ## Shallow compare
 
-SSiG performs a shallow comparison when setState is called.  [See here](src/store.js#L40).
+SSiG performs a shallow comparison when setState is called.  [See here](src/store.ts#L117).
 
 ## forceUpdateViaName
 You can give the query object a name:
@@ -262,7 +265,6 @@ So ultimately, SSiG merely maps objects to `forceUpdate`s, and it's just a matte
 ## Todo
 
 * Tests
-* TypeScript stuff - maybe rewrite it in TS?
 * chill
 
 ## License
