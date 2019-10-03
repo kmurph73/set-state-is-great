@@ -11,7 +11,6 @@ export default class Store<State> {
     {
       store: keyof State;
       watchAttrs?: Array<string> | null;
-      name?: string;
       forceUpdate: ForceUpdateIfMounted;
     }
   >;
@@ -21,12 +20,16 @@ export default class Store<State> {
     this.objStore = new Map();
   }
 
-  getStore() {
+  /**
+   * Get the central state object that holds all of the stores.
+   * https://github.com/kmurph73/set-state-is-great#getfullstate
+   */
+  getFullStore() {
     return this.state;
   }
 
   /**
-   * *assign* values to a store.  if you want to replace the object in a store, there's assignState
+   * *set* values on a store.
    *
    * https://github.com/kmurph73/set-state-is-great#setstate
    *
@@ -34,7 +37,6 @@ export default class Store<State> {
    *  store.setState('drawer', {open: true});
    *
    */
-
   setState<K extends keyof State>(store: K, nextState: State[K]) {
     const changedAttrs: Array<string> = [];
 
@@ -51,7 +53,7 @@ export default class Store<State> {
 
     /* eslint-disable-next-line @typescript-eslint/no-unused-vars */
     for (const [id, obj] of this.objStore) {
-      if (!obj.watchAttrs || this.watchingAttrs(changedAttrs, obj.watchAttrs)) {
+      if (obj.store === store && (!obj.watchAttrs || this.watchingAttrs(changedAttrs, obj.watchAttrs))) {
         forceUpdatesToCall.push(obj.forceUpdate);
       }
     }
@@ -62,7 +64,7 @@ export default class Store<State> {
     }
   }
 
-  watchingAttrs(changedAttrs: Array<string>, watchAttrs: Array<string>) {
+  private watchingAttrs(changedAttrs: Array<string>, watchAttrs: Array<string>) {
     for (let i = 0; i < changedAttrs.length; i++) {
       if (watchAttrs.includes(changedAttrs[i])) {
         return true;
@@ -72,48 +74,67 @@ export default class Store<State> {
     return false;
   }
 
+  /**
+   * Access a store's state via `store.getState(store)`:
+   *
+   * https://github.com/kmurph73/set-state-is-great#getstate
+   *
+   * @example
+   *  store.getState('drawer');
+   *
+   */
   getState<K extends keyof State>(s: K) {
     return this.state[s];
   }
 
-  createGetState<K extends keyof State>(s: K) {
+  private createGetState<K extends keyof State>(s: K) {
     return () => {
       return this.getState<K>(s);
     };
   }
 
-  createSetState<K extends keyof State>(s: K) {
+  private createSetState<K extends keyof State>(s: K) {
     return (next: State[K]) => {
       return this.setState(s, next);
     };
   }
 
-  unsubscribe(id: number) {
+  private unsubscribe(id: number) {
     this.objStore.delete(id);
   }
 
-  subscribe<K extends keyof State, X extends keyof State[K]>(
+  private subscribe<K extends keyof State, X extends keyof State[K]>(
     id: number,
     store: K,
     forceUpdate: ForceUpdateIfMounted,
     watchAttrs?: Array<X> | null,
-    name?: string,
   ) {
     this.objStore.set(id, {
       store: store,
       watchAttrs: watchAttrs as Array<string>,
       forceUpdate: forceUpdate,
-      name: name,
     });
   }
 
-  useStoreState<K extends keyof State, X extends keyof State[K]>(
-    store: K,
-    watchAttrs?: Array<X> | null,
-    name?: string,
-  ) {
+  /**
+   * access and observe changes to a store's state
+   *
+   * https://github.com/kmurph73/set-state-is-great#the-usestorestate-hook
+   *
+   * @example
+   *
+   * function Drawer() {
+   *   const {open} = store.useStoreState('drawer', ['open']);
+   *   return (
+   *     <MuiDrawer open={open}>
+   *       <div>just drawer things</div>
+   *     </MuiDrawer>
+   *   )
+   * }
+   */
+  useStoreState<K extends keyof State, X extends keyof State[K]>(store: K, watchAttrs?: Array<X>) {
     const id = useComponentId();
-    this.subscribe(id, store, useForceUpdateIfMounted(), watchAttrs, name);
+    this.subscribe(id, store, useForceUpdateIfMounted(), watchAttrs);
 
     React.useEffect(
       () => (): void => {
@@ -125,19 +146,15 @@ export default class Store<State> {
     return this.getState(store);
   }
 
-  createUseStoreState<K extends keyof State, X extends keyof State[K]>(
-    store: K,
-    watchAttrs?: Array<X> | null,
-    name?: string,
-  ) {
+  createUseStoreState<K extends keyof State, X extends keyof State[K]>(store: K, watchAttrs?: Array<X>) {
     return () => {
-      return this.useStoreState(store, watchAttrs, name);
+      return this.useStoreState(store, watchAttrs);
     };
   }
 
-  getFns<K extends keyof State, X extends keyof State[K]>(store: K, watchAttrs?: Array<X> | null, name?: string) {
+  getHelpers<K extends keyof State, X extends keyof State[K]>(store: K, watchAttrs?: Array<X>) {
     return {
-      useStoreState: this.createUseStoreState(store, watchAttrs, name),
+      useStoreState: this.createUseStoreState(store, watchAttrs),
       getState: this.createGetState(store),
       setState: this.createSetState(store),
     };
