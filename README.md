@@ -45,8 +45,8 @@ For mutating a store's data, there's `setState`:
 store.setState('drawer', {open: true});
 ```
 
-## The `useStoreState` Hook
-Watch a store's state with `useStore`:
+## The `useStore` Hook
+SSiG's only hook (for now).  Watch a store's state with `useStore`:
 
 ```javascript
 import {store} from './store';
@@ -88,7 +88,7 @@ const close = () => {
 };
 
 // getState() returns drawer's state
-// useStore is scoped to `drawer` and will watch the `open` attr here
+// useStore is scoped to `drawer` and will observe changes to `open`
 const {getState, setState, useStore} = store.getHelpers('drawer', ['open'])
 
 function Drawer() {
@@ -114,7 +114,7 @@ store.getState('drawer');
 
 ## Watching for changes to any attribute in a store
 
-If you'd like to watch for changes to _any_ attr in a store, simply remove `watchAttrs`:
+If you'd like to watch for changes to _any_ attr in a store, simply remove the `watchAttrs` parameter:
 
 ```javascript
 // will trigger a rerender upon any change to the drawer store
@@ -146,9 +146,7 @@ Replacing easy-peasy with SSiG in my app was quite easy ... and everything seems
 
 When `useStore` is called, a `forceUpdate` function is created and stored away (which is dereferenced upon component dismount, of course).
 
-When `setState` is called, it finds all of the changed attributes for that store, then finds the components watching them with `watchAttrs`, then calls the `forceUpdate`s associated with those objects.
-
-So ultimately, SSiG merely maps components to `forceUpdate`s, and it's just a matter of finding the relevant `forceUpdate`s when `setState` is called.
+When `setState` is called, it finds all of the changed attributes for that store, then finds the components watching those attrs, then `forceUpdate`s them.
 
 ## Prior art
 
