@@ -173,7 +173,30 @@ Then you can import the store from any file: `import {store} from './constants';
 
 ## TypeScript
 
-See above :).  By giving `Store` your app's state, `useStore` et al. will "know" the acceptable parameters, and correct return types.
+SSiG is written in TS, and it's highly recommended that you use it with TS.  
+
+To do so, define your store's state like so:
+
+``` TypeScript
+export interface DrawerState {
+  "open": boolean;
+}
+
+export interface ModalState {
+  "open": boolean;
+  "title": string;
+}
+
+export interface AppState {
+  "drawer": DrawerState;
+  "modal": ModalState;
+}
+```
+
+Then pass in AppState as a Generic when creating your store:
+```TypeScript
+const store = new Store<AppState>(appState);
+```
 
 ## Motivation
 
