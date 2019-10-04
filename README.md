@@ -46,7 +46,7 @@ store.setState('drawer', {open: true});
 ```
 
 ## The `useStore` Hook
-SSiG's only hook (for now).  Watch a store's state with `useStore`:
+SSiG's only hook (for now): `useStore`
 
 ```javascript
 import {store} from './store';
@@ -64,7 +64,7 @@ function Drawer() {
 export default React.memo(Drawer);
 ```
 
-Here we're watching only watching the `open` attr on the `drawer` store.
+Here we watch for changes to the `open` attr on the `drawer` store.
 
 However, despite only watching `open`, useStoreState returns `drawer`'s entire state.  So if `drawer` also a had a `rando` attr, you could grab that while you're at it:
 
@@ -133,6 +133,47 @@ allStores.modal // {open: true, title: 'other'}
 ## Shallow compare
 
 SSiG performs a shallow comparison when setState is called.  [See here](src/store.ts#L117).
+
+## Organizing the store; and using TypeScript
+
+I recommend creating something like a `constants.ts` file with a `store` variable and function to set it: 
+
+``` TypeScript
+// constants.ts
+import { Store } from "set-state-is-great";
+import { AppState } from "./types";
+
+export var store: Store<AppState>;
+
+export const setStore = (theStore: Store<AppState>) => {
+  store = theStore
+  window.App = {store: theStore}
+}
+```
+
+Then in say, `store.ts`, you can set it when creating your store:
+
+``` TypeScript
+// store.ts
+import {Store} from 'set-state-is-great';
+import {AppState} from './types';
+import {setStore} from './constants';
+
+const appState: AppState = {
+  drawer: {open: false},
+  modal: {open: false, title: 'nada'},
+}
+
+const store = new Store<AppState>(appState);
+
+setStore(store);
+```
+
+Then you can import the store from anywhere: `import {store} from './constants';`
+
+## TypeScript
+
+See above :).  By giving `Store` your app's state, `useStore` et al. will "know" the acceptable parameters, and correct return types.
 
 ## Motivation
 
