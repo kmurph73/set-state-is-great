@@ -49,7 +49,7 @@ store.setState('drawer', {open: true});
 SSiG's only hook (for now): `useStore`
 
 ```javascript
-import {store} from './store';
+import {store} from './constants';
 
 function Drawer() {
   const {open} = store.useStore('drawer', ['open']);
@@ -81,7 +81,7 @@ const drawerState = useStoreState(query);
 `getHelpers` gives you `setState` & `getState` & `useStore` scoped to a particular store.
 
 ```javascript
-import {store} from './store';
+import {store} from './constants';
 
 const close = () => {
   setState({open: false})
