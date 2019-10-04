@@ -151,7 +151,7 @@ export const setStore = (theStore: Store<AppState>) => {
 }
 ```
 
-Then in say, `store.ts`, you can set it when creating your store:
+Then you can set it when creating your store:
 
 ``` TypeScript
 // store.ts
@@ -169,7 +169,7 @@ const store = new Store<AppState>(appState);
 setStore(store);
 ```
 
-Then you can import the store from anywhere: `import {store} from './constants';`
+Then you can import the store from any file: `import {store} from './constants';`
 
 ## TypeScript
 
