@@ -119,7 +119,7 @@ export default class Store<State> {
   /**
    * access and observe changes to a store's state
    *
-   * https://github.com/kmurph73/set-state-is-great#the-usestorestate-hook
+   * https://github.com/kmurph73/set-state-is-great#the-usestore-hook
    *
    * @example
    *
@@ -154,6 +154,28 @@ export default class Store<State> {
       return this.useStore(store, watchAttrs);
     };
   }
+
+  /**
+   * getHelpers gives you setState & getState & useStore scoped to a particular store.
+   *
+   * https://github.com/kmurph73/set-state-is-great#gethelpers
+   *
+   * @example
+   *
+   * // getState() returns drawer's state
+   * // useStore is scoped to `drawer` and will observe changes to `open`
+   * // setState sets drawer's state
+   * const {getState, setState, useStore} = store.getHelpers('drawer', ['open'])
+   *
+   * function Drawer() {
+   *   const {open} = store.useStore('drawer', ['open']);
+   *   return (
+   *     <MuiDrawer open={open}>
+   *       <div>just drawer things</div>
+   *     </MuiDrawer>
+   *   )
+   * }
+   */
 
   getHelpers<Key extends keyof State, KeyOfStore extends keyof State[Key]>(store: Key, watchAttrs?: Array<KeyOfStore>) {
     return {
