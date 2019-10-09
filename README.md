@@ -1,7 +1,7 @@
 # Set State is Great
 <p align='center'>A global store + setState + hooks integration.</p>
 
-Global state management without the ceremony.  No Context, Redux, actions, thunks, selectors, or anything that ends in "ducer."  Zero dependency (other than React of course).  [And now written in TypeScript!](https://github.com/kmurph73/set-state-is-great/pull/3)
+Global state management without the ceremony.  No Context, Redux, actions, thunks, selectors, or anything that ends in "ducer."  Zero dependency (other than React of course).  [And now written in TypeScript!](https://github.com/kmurph73/set-state-is-great/pull/5)
 
 ## Installing
 
@@ -69,11 +69,11 @@ Here we watch for changes to the `open` attr on the `drawer` store.
 However, despite only watching `open`, useStoreState returns `drawer`'s entire state.  So if `drawer` also a had a `rando` attr, you could grab that while you're at it:
 
 ```javascript
-const {open, rando} = useStoreState(query);
+const {open, rando} = store.useStore('drawer', ['open']);
 ```
 or just the entire state object:
 ```javascript
-const drawerState = useStoreState(query);
+const drawerState = store.useStore('drawer', ['open']);
 ```
 
 ## getHelpers
@@ -134,7 +134,7 @@ allStores.modal // {open: true, title: 'other'}
 
 SSiG performs a shallow comparison when setState is called.  [See here](src/store.ts#L117).
 
-## Organizing the store; and using TypeScript
+## Organizing the store (and some TypeScript)
 
 I recommend creating something like a `constants.ts` file with a `store` variable and function to set it: 
 
@@ -194,9 +194,21 @@ export interface AppState {
 ```
 
 Then pass in AppState as a Generic when creating your store:
+
 ```TypeScript
 const store = new Store<AppState>(appState);
 ```
+
+Now TS will be able to check that you're passing in the correct parameters into things like `useStore`, eg:
+
+```TypeScript
+// TS will warn that there's no "blah" attr in the drawer store
+const drawerState = store.useStore('drawer', ['blah']);
+
+// TS will warn that there's no "blah" store
+const drawerState = store.useStore('blah');
+```
+
 
 ## Motivation
 
