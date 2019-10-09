@@ -168,7 +168,8 @@ export default class Store<State> {
    * const {getState, setState, useStore} = store.getHelpers('drawer', ['open'])
    *
    * function Drawer() {
-   *   const {open} = store.useStore('drawer', ['open']);
+   *   const {open} = useStore();
+   *
    *   return (
    *     <MuiDrawer open={open}>
    *       <div>just drawer things</div>
@@ -176,7 +177,6 @@ export default class Store<State> {
    *   )
    * }
    */
-
   getHelpers<Key extends keyof State, KeyOfStore extends keyof State[Key]>(store: Key, watchAttrs?: Array<KeyOfStore>) {
     return {
       useStoreState: this.createUseStore(store, watchAttrs),
