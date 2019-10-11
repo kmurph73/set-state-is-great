@@ -7,7 +7,7 @@ export default class Store<State> {
   private state: State;
 
   private objStore: Map<
-    number,
+    string,
     {
       store: keyof State;
       watchAttrs?: Array<string> | null;
@@ -99,17 +99,17 @@ export default class Store<State> {
     };
   }
 
-  private unsubscribe(id: number) {
-    this.objStore.delete(id);
+  private unsubscribe(key: string) {
+    this.objStore.delete(key);
   }
 
   private subscribe<Key extends keyof State, KeyOfStore extends keyof State[Key]>(
-    id: number,
+    key: string,
     store: Key,
     forceUpdate: ForceUpdateIfMounted,
     watchAttrs?: Array<KeyOfStore> | null,
   ) {
-    this.objStore.set(id, {
+    this.objStore.set(key, {
       store: store,
       watchAttrs: watchAttrs as Array<string>,
       forceUpdate: forceUpdate,
@@ -134,13 +134,14 @@ export default class Store<State> {
    */
   useStore<Key extends keyof State, KeyOfStore extends keyof State[Key]>(store: Key, watchAttrs?: Array<KeyOfStore>) {
     const id = useComponentId();
-    this.subscribe(id, store, useForceUpdateIfMounted(), watchAttrs);
+    const key = id + '-' + store;
+    this.subscribe(key, store, useForceUpdateIfMounted(), watchAttrs);
 
     React.useEffect(
       () => (): void => {
-        this.unsubscribe(id);
+        this.unsubscribe(key);
       },
-      [id],
+      [key],
     );
 
     return this.getState(store);
