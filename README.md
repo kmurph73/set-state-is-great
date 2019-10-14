@@ -31,7 +31,7 @@ const store = new Store(appState);
 
 In this scenario, `main`, `drawer`, and `home` are your _stores_.
 
-Since SSiG is designed to be a global store, feel free to attach `store` to a top-level object for global access, eg:
+Since SSiG is intended to be a global store, feel free to attach `store` to a top-level object for global access, eg:
 
 ``` javascript
 window.App = {store};
@@ -64,7 +64,7 @@ function Drawer() {
 export default React.memo(Drawer);
 ```
 
-Here we watch for changes to the `open` attr on the `drawer` store.
+Here we watch for changes to the `open` attr on the `drawer` store - the component will only rerender if `open` changes.
 
 However, despite only watching `open`, useStoreState returns `drawer`'s entire state.  So if `drawer` also a had a `rando` attr, you could grab that while you're at it:
 
@@ -117,8 +117,13 @@ store.getState('drawer');
 If you'd like to watch for changes to _any_ attr in a store, simply remove the `watchAttrs` parameter:
 
 ```javascript
-// will trigger a rerender upon any change to the drawer store
-const {getState, setState} = store.getHelpers('drawer');
+const {useStore} = store.getHelpers('drawer');
+
+function Drawer() {
+  // will trigger a rerender upon any change to the drawer store
+  const {open} = useStore();
+  // ...
+}
 ```
 
 ## getFullState
@@ -132,7 +137,7 @@ allStores.modal // {open: true, title: 'other'}
 
 ## Shallow compare
 
-SSiG performs a shallow comparison when setState is called.  [See here](src/store.ts#L117).
+SSiG performs a shallow comparison when setState is called.  [See here](src/store.ts#L45).
 
 ## Organizing the store (and some TypeScript)
 
@@ -208,7 +213,6 @@ const drawerState = store.useStore('drawer', ['blah']);
 // TS will warn that there's no "blah" store
 const drawerState = store.useStore('blah');
 ```
-
 
 ## Motivation
 
