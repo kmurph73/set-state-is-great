@@ -178,7 +178,7 @@ Then you can import the store from any file: `import {store} from './constants';
 
 ## TypeScript
 
-SSiG is written in TS, and it's highly recommended that you use it with TS.  
+SSiG is written in & optimized for TS, and it's highly recommended that you use it with TS.  
 
 To do so, define your store's state like so:
 
