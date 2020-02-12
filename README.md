@@ -112,6 +112,16 @@ You can access a store's state via `getState(store)`:
 store.getState('drawer');
 ```
 
+## getClonedState
+
+Get a _cloned_ store's state via `getClonedState(store)`.  Useful if you want to munge state before setting it:
+
+```javascript
+const state = store.getClonedState('drawer');
+state.open = true;
+store.setState('drawer', state);
+```
+
 ## Watching for changes to any attribute in a store
 
 If you'd like to watch for changes to _any_ attr in a store, simply remove the `watchAttrs` parameter:
@@ -183,6 +193,7 @@ SSiG is written in & optimized for TS, and it's highly recommended that you use 
 To do so, define your store's state like so:
 
 ``` TypeScript
+// types.ts
 export interface DrawerState {
   "open": boolean;
 }
@@ -234,6 +245,7 @@ When `setState` is called, it finds all of the changed attributes for that store
 
 ## Todo
 
+* Implement `useMultipleStates` & `setMultipleStates`
 * Tests
 * chill
 

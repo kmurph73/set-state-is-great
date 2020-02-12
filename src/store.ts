@@ -38,9 +38,13 @@ export default class Store<State> {
    *
    */
   setState<Key extends keyof State>(store: Key, nextState: State[Key]) {
-    const changedAttrs: Array<string> = [];
-
     const existingState = this.state[store];
+
+    if (existingState === nextState) {
+      throw `You cannot pass an existing state object to setState.  If you want to force a rerender, use forceUpdateViaStore(store) or forceUpdateEverything()`;
+    }
+
+    const changedAttrs: Array<string> = [];
 
     for (const attr in nextState) {
       if (existingState[attr] !== nextState[attr]) {
@@ -90,6 +94,31 @@ export default class Store<State> {
   private createGetState<Key extends keyof State>(s: Key) {
     return () => {
       return this.getState<Key>(s);
+    };
+  }
+
+  /**
+   * Get a cloned store's state via `store.getClonedState(store)`:
+   *
+   * https://github.com/kmurph73/set-state-is-great#getclonedstate
+   *
+   * @example
+   *  store.getState('drawer');
+   *
+   */
+  getClonedState<Key extends keyof State>(s: Key) {
+    const newObj = {} as State[Key];
+    const state = this.state[s];
+    for (const attr in state) {
+      newObj[attr] = state[attr];
+    }
+
+    return newObj;
+  }
+
+  private createGetClonedState<Key extends keyof State>(s: Key) {
+    return () => {
+      return this.getClonedState<Key>(s);
     };
   }
 
@@ -164,9 +193,10 @@ export default class Store<State> {
    * @example
    *
    * // getState() returns drawer's state
+   * // getClonedState() returns drawer's cloned state
    * // useStore is scoped to `drawer` and will observe changes to `open`
    * // setState sets drawer's state
-   * const {getState, setState, useStore} = store.getHelpers('drawer', ['open'])
+   * const {getState, getClonedState, setState, useStore} = store.getHelpers('drawer', ['open'])
    *
    * function Drawer() {
    *   const {open} = useStore();
@@ -182,6 +212,7 @@ export default class Store<State> {
     return {
       useStoreState: this.createUseStore(store, watchAttrs),
       getState: this.createGetState(store),
+      getClonedState: this.createGetClonedState(store),
       setState: this.createSetState(store),
     };
   }
