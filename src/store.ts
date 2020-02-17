@@ -129,7 +129,7 @@ export default class Store<State> {
   }
 
   private createSetState<Key extends keyof State>(s: Key) {
-    return (next: State[Key]) => {
+    return (next: Partial<State[Key]>) => {
       return this.setState(s, next);
     };
   }
