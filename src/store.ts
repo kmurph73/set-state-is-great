@@ -176,7 +176,7 @@ export default class Store<State> {
     return this.getState(store);
   }
 
-  createUseStore<Key extends keyof State, KeyOfStore extends keyof State[Key]>(
+  private createUseStore<Key extends keyof State, KeyOfStore extends keyof State[Key]>(
     store: Key,
     watchAttrs?: Array<KeyOfStore>,
   ) {
