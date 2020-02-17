@@ -29,6 +29,40 @@ export default class Store<State> {
   }
 
   /**
+   * force update all components watching a particular store
+   *
+   * https://github.com/kmurph73/set-state-is-great#forceupdating
+   *
+   * @example
+   *  store.forceUpdate('drawer');
+   *
+   */
+  forceUpdate<Key extends keyof State>(store: Key) {
+    /* eslint-disable-next-line @typescript-eslint/no-unused-vars */
+    for (const [id, obj] of this.objStore) {
+      if (obj.store === store) {
+        obj.forceUpdate();
+      }
+    }
+  }
+
+  /**
+   * force update all components that are watching any store
+   *
+   * https://github.com/kmurph73/set-state-is-great#forceupdating
+   *
+   * @example
+   *  store.forceUpdateEverything();
+   *
+   */
+  forceUpdateEverything() {
+    /* eslint-disable-next-line @typescript-eslint/no-unused-vars */
+    for (const [id, obj] of this.objStore) {
+      obj.forceUpdate();
+    }
+  }
+
+  /**
    * *set* values on a store.
    *
    * https://github.com/kmurph73/set-state-is-great#setstate
@@ -37,10 +71,18 @@ export default class Store<State> {
    *  store.setState('drawer', {open: true});
    *
    */
-  setState<Key extends keyof State>(store: Key, nextState: State[Key]) {
+  setState<Key extends keyof State>(store: Key, partialNextState: Partial<State[Key]>) {
     const changedAttrs: Array<string> = [];
 
     const existingState = this.state[store];
+
+    if (existingState === partialNextState) {
+      throw new Error(
+        `You cannot pass an existing state object to setState.  If you want to force a rerender, use forceUpdate(store) or forceUpdateEverything()`,
+      );
+    }
+
+    const nextState = { ...this.state[store], ...partialNextState };
 
     for (const attr in nextState) {
       if (existingState[attr] !== nextState[attr]) {
@@ -49,18 +91,11 @@ export default class Store<State> {
       }
     }
 
-    const forceUpdatesToCall: Array<ForceUpdateIfMounted> = [];
-
     /* eslint-disable-next-line @typescript-eslint/no-unused-vars */
     for (const [id, obj] of this.objStore) {
       if (obj.store === store && (!obj.watchAttrs || this.watchingAttrs(changedAttrs, obj.watchAttrs))) {
-        forceUpdatesToCall.push(obj.forceUpdate);
+        obj.forceUpdate();
       }
-    }
-
-    const len = forceUpdatesToCall.length;
-    for (let i = 0; i < len; i++) {
-      forceUpdatesToCall[i]();
     }
   }
 
@@ -147,7 +182,7 @@ export default class Store<State> {
     return this.getState(store);
   }
 
-  createUseStore<Key extends keyof State, KeyOfStore extends keyof State[Key]>(
+  private createUseStore<Key extends keyof State, KeyOfStore extends keyof State[Key]>(
     store: Key,
     watchAttrs?: Array<KeyOfStore>,
   ) {
