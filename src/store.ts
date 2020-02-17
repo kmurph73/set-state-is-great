@@ -47,7 +47,7 @@ export default class Store<State> {
   }
 
   /**
-   * force update all components that are watching any store
+   * force update all components that are "hooked" into SSiG
    *
    * https://github.com/kmurph73/set-state-is-great#forceupdatingcomponents
    *
