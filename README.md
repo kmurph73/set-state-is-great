@@ -214,6 +214,16 @@ const drawerState = store.useStore('drawer', ['blah']);
 const drawerState = store.useStore('blah');
 ```
 
+## Force updating components
+
+``` TypeScript
+// forceUpdate all components watching a particular store
+store.forceUpdate('drawer');
+
+// forceUpdate all components being watched by SSiG
+store.forceUpdateEverything();
+```
+
 ## Motivation
 
 SSiG was inspired by my abuse of [easy-peasy][2] while building a medium-sized React SPA.  I wasn't sure why I was supposed to create an `action` just to add an item to an array, when you can just do: 
@@ -222,6 +232,7 @@ setState({arr: [...arr, item]});
 ```
 
 Replacing easy-peasy with SSiG in my app was quite easy ... and everything seems to Just Work.
+
 ## How does it work?
 
 When `useStore` is called, a `forceUpdate` function is created and stored away (which is dereferenced upon component dismount, of course).

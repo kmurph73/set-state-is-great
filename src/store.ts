@@ -31,7 +31,7 @@ export default class Store<State> {
   /**
    * force update all components watching a particular store
    *
-   * https://github.com/kmurph73/set-state-is-great#forceupdating
+   * https://github.com/kmurph73/set-state-is-great#forceupdatingcomponents
    *
    * @example
    *  store.forceUpdate('drawer');
@@ -49,7 +49,7 @@ export default class Store<State> {
   /**
    * force update all components that are watching any store
    *
-   * https://github.com/kmurph73/set-state-is-great#forceupdating
+   * https://github.com/kmurph73/set-state-is-great#forceupdatingcomponents
    *
    * @example
    *  store.forceUpdateEverything();
