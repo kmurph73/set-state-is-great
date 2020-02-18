@@ -31,7 +31,7 @@ export default class Store<State> {
   /**
    * force update all components watching a particular store
    *
-   * https://github.com/kmurph73/set-state-is-great#forceupdatingcomponents
+   * https://github.com/kmurph73/set-state-is-great#force-updating-components
    *
    * @example
    *  store.forceUpdate('drawer');
@@ -49,7 +49,7 @@ export default class Store<State> {
   /**
    * force update all components that are "hooked" into SSiG
    *
-   * https://github.com/kmurph73/set-state-is-great#forceupdatingcomponents
+   * https://github.com/kmurph73/set-state-is-great#force-updating-components
    *
    * @example
    *  store.forceUpdateEverything();
@@ -123,12 +123,32 @@ export default class Store<State> {
   }
 
   private createGetState<Key extends keyof State>(s: Key) {
+    /**
+     * Access a (scoped) store's state via `store.getHelpers(storeName)`:
+     *
+     * https://github.com/kmurph73/set-state-is-great#gethelpers
+     *
+     * @example
+     *  const {getState} = store.getHelpers('drawer');
+     *  const drawerState = getState();
+     *
+     */
     return () => {
       return this.getState<Key>(s);
     };
   }
 
   private createSetState<Key extends keyof State>(s: Key) {
+    /**
+     * *set* values on a (scoped) store via `store.getHelpers(storeName)`
+     *
+     * https://github.com/kmurph73/set-state-is-great#gethelpers
+     *
+     * @example
+     *  const {getState} = store.getHelpers('drawer');
+     *  setState({open: true});
+     *
+     */
     return (next: Partial<State[Key]>) => {
       return this.setState(s, next);
     };
