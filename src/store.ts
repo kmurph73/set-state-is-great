@@ -3,8 +3,11 @@ import { ForceUpdateIfMounted } from './types';
 import useForceUpdateIfMounted from './useForceUpdateIfMounted';
 import useComponentId from './useComponentId';
 
-export default class Store<State> {
-  private state: State;
+type PlainObject = Record<string, unknown>;
+type StateType = Record<string, PlainObject>;
+
+export default class Store<State extends StateType> {
+  private state: Partial<State>;
 
   private objStore: Map<
     string,
@@ -15,8 +18,8 @@ export default class Store<State> {
     }
   >;
 
-  constructor(state: State) {
-    this.state = state;
+  constructor() {
+    this.state = {};
     this.objStore = new Map();
   }
 
@@ -71,10 +74,14 @@ export default class Store<State> {
    *  store.setState('drawer', {open: true});
    *
    */
-  setState<Key extends keyof State>(store: Key, partialNextState: Partial<State[Key]>) {
+  setState<Key extends keyof Partial<State>>(store: Key, partialNextState: Partial<State[Key]>) {
     const changedAttrs: Array<string> = [];
 
     const existingState = this.state[store];
+
+    if (!existingState) {
+      throw new Error(`store ${store} is not set`);
+    }
 
     if (existingState === partialNextState) {
       throw new Error(
@@ -82,7 +89,8 @@ export default class Store<State> {
       );
     }
 
-    const nextState = { ...this.state[store], ...partialNextState };
+    const nextState = { ...existingState, ...partialNextState };
+    // let attr: Extract<keyof State[Key], string>;
 
     for (const attr in nextState) {
       if (existingState[attr] !== nextState[attr]) {
@@ -118,8 +126,13 @@ export default class Store<State> {
    *  store.getState('drawer');
    *
    */
-  getState<Key extends keyof State>(s: Key) {
-    return this.state[s];
+  getState<Key extends keyof State>(store: Key) {
+    const state = this.state[store];
+    if (state) {
+      return state;
+    } else {
+      throw new Error(`store ${store} not present`);
+    }
   }
 
   private createGetState<Key extends keyof State>(s: Key) {
