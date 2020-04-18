@@ -3,28 +3,24 @@ import { ForceUpdateIfMounted } from './types';
 import useForceUpdateIfMounted from './useForceUpdateIfMounted';
 import useComponentId from './useComponentId';
 
-export default class Store<State> {
-  private state: State;
+interface PlainObject {
+  [key: string]: unknown;
+}
+export default class Store<State, Key extends keyof State> {
+  private state: Map<Key, State[Key]>;
 
-  private objStore: Map<
-    string,
-    {
-      store: keyof State;
-      watchAttrs?: Array<string> | null;
-      forceUpdate: ForceUpdateIfMounted;
-    }
-  >;
+  private objStore: Map<Key, { memoized: boolean; forceUpdate: ForceUpdateIfMounted }>;
 
-  constructor(state: State) {
+  constructor(state: Map<Key, State[Key]>) {
     this.state = state;
     this.objStore = new Map();
   }
 
   /**
    * Get the central state object that holds all of the stores.
-   * https://github.com/kmurph73/set-state-is-great#getfullstate
+   * https://github.com/kmurph73/set-state-is-great#getfull
    */
-  getFullStore() {
+  getFullStateMap() {
     return this.state;
   }
 
@@ -37,17 +33,16 @@ export default class Store<State> {
    *  store.forceUpdate('drawer');
    *
    */
-  forceUpdate<Key extends keyof State>(store: Key) {
-    /* eslint-disable-next-line @typescript-eslint/no-unused-vars */
-    for (const [id, obj] of this.objStore) {
-      if (obj.store === store) {
-        obj.forceUpdate();
-      }
+  forceUpdate(key: Key) {
+    const forceUpdate = this.objStore.get(key)?.forceUpdate;
+
+    if (forceUpdate) {
+      forceUpdate();
     }
   }
 
   /**
-   * force update all components that are "hooked" into SSiG
+   * force update all memo'd components
    *
    * https://github.com/kmurph73/set-state-is-great#force-updating-components
    *
@@ -55,7 +50,7 @@ export default class Store<State> {
    *  store.forceUpdateEverything();
    *
    */
-  forceUpdateEverything() {
+  forceUpdateMemoized() {
     /* eslint-disable-next-line @typescript-eslint/no-unused-vars */
     for (const [id, obj] of this.objStore) {
       obj.forceUpdate();
@@ -71,42 +66,28 @@ export default class Store<State> {
    *  store.setState('drawer', {open: true});
    *
    */
-  setState<Key extends keyof State>(store: Key, partialNextState: Partial<State[Key]>) {
-    const changedAttrs: Array<string> = [];
+  setState(key: Key, partialNextState: Partial<State[Key]>) {
+    const existingState = this.state.get(key);
 
-    const existingState = this.state[store];
+    if (!existingState) {
+      throw new Error(`State doesnt have ${key}`);
+    }
 
     if (existingState === partialNextState) {
       throw new Error(
-        `You cannot pass an existing state object to setState.  If you want to force a rerender, use forceUpdate(store) or forceUpdateEverything()`,
+        `You cannot pass an existing state object to setState.  If you want to force a rerender, use forceUpdate(key) or forceUpdateEverything()`,
       );
     }
 
-    const nextState = { ...this.state[store], ...partialNextState };
+    const nextState = { ...existingState, ...partialNextState };
 
-    for (const attr in nextState) {
-      if (existingState[attr] !== nextState[attr]) {
-        existingState[attr] = nextState[attr];
-        changedAttrs.push(attr);
-      }
+    this.state.set(key, nextState);
+
+    const forceUpdate = this.objStore.get(key)?.forceUpdate;
+
+    if (forceUpdate) {
+      forceUpdate();
     }
-
-    /* eslint-disable-next-line @typescript-eslint/no-unused-vars */
-    for (const [id, obj] of this.objStore) {
-      if (obj.store === store && (!obj.watchAttrs || this.watchingAttrs(changedAttrs, obj.watchAttrs))) {
-        obj.forceUpdate();
-      }
-    }
-  }
-
-  private watchingAttrs(changedAttrs: Array<string>, watchAttrs: Array<string>) {
-    for (let i = 0; i < changedAttrs.length; i++) {
-      if (watchAttrs.includes(changedAttrs[i])) {
-        return true;
-      }
-    }
-
-    return false;
   }
 
   /**
@@ -118,11 +99,11 @@ export default class Store<State> {
    *  store.getState('drawer');
    *
    */
-  getState<Key extends keyof State>(s: Key) {
-    return this.state[s];
+  getState(key: Key) {
+    return this.state.get(key);
   }
 
-  private createGetState<Key extends keyof State>(s: Key) {
+  private createGetState(key: Key) {
     /**
      * Access a (scoped) store's state via `store.getHelpers(storeName)`:
      *
@@ -134,11 +115,11 @@ export default class Store<State> {
      *
      */
     return () => {
-      return this.getState<Key>(s);
+      return this.getState(key);
     };
   }
 
-  private createSetState<Key extends keyof State>(s: Key) {
+  private createSetState(key: Key) {
     /**
      * *set* values on a (scoped) store via `store.getHelpers(storeName)`
      *
@@ -150,47 +131,23 @@ export default class Store<State> {
      *
      */
     return (next: Partial<State[Key]>) => {
-      return this.setState(s, next);
+      return this.setState(key, next);
     };
   }
 
-  private unsubscribe(key: string) {
+  unsubscribe(key: Key) {
     this.objStore.delete(key);
   }
 
-  private subscribe<Key extends keyof State, KeyOfStore extends keyof State[Key]>(
-    key: string,
-    store: Key,
-    forceUpdate: ForceUpdateIfMounted,
-    watchAttrs?: Array<KeyOfStore> | null,
-  ) {
+  subscribe(key: Key, forceUpdate: ForceUpdateIfMounted, memoized: boolean) {
     this.objStore.set(key, {
-      store: store,
-      watchAttrs: watchAttrs as Array<string>,
       forceUpdate: forceUpdate,
+      memoized: memoized,
     });
   }
 
-  /**
-   * access and observe changes to a store's state
-   *
-   * https://github.com/kmurph73/set-state-is-great#the-usestore-hook
-   *
-   * @example
-   *
-   * function Drawer() {
-   *   const {open} = store.useStore('drawer', ['open']);
-   *   return (
-   *     <MuiDrawer open={open}>
-   *       <div>just drawer things</div>
-   *     </MuiDrawer>
-   *   )
-   * }
-   */
-  useStore<Key extends keyof State, KeyOfStore extends keyof State[Key]>(store: Key, watchAttrs?: Array<KeyOfStore>) {
-    const id = useComponentId();
-    const key = id + '-' + store;
-    this.subscribe(key, store, useForceUpdateIfMounted(), watchAttrs);
+  useStore(key: Key, memoized: false) {
+    this.subscribe(key, useForceUpdateIfMounted(), memoized);
 
     React.useEffect(
       () => (): void => {
@@ -199,15 +156,12 @@ export default class Store<State> {
       [key],
     );
 
-    return this.getState(store);
+    return this.getState(key);
   }
 
-  private createUseStore<Key extends keyof State, KeyOfStore extends keyof State[Key]>(
-    store: Key,
-    watchAttrs?: Array<KeyOfStore>,
-  ) {
+  private createUseStore(key: Key, memoized: false) {
     return () => {
-      return this.useStore(store, watchAttrs);
+      return this.useStore(key, memoized);
     };
   }
 
@@ -233,11 +187,11 @@ export default class Store<State> {
    *   )
    * }
    */
-  getHelpers<Key extends keyof State, KeyOfStore extends keyof State[Key]>(store: Key, watchAttrs?: Array<KeyOfStore>) {
+  getHelpers(key: Key, memoized: false) {
     return {
-      useStoreState: this.createUseStore(store, watchAttrs),
-      getState: this.createGetState(store),
-      setState: this.createSetState(store),
+      useStoreState: this.createUseStore(key, memoized),
+      getState: this.createGetState(key),
+      setState: this.createSetState(key),
     };
   }
 }
