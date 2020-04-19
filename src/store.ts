@@ -1,11 +1,13 @@
-import React from 'react';
 import { ForceUpdateIfMounted } from './types';
-import useForceUpdateIfMounted from './useForceUpdateIfMounted';
-import useComponentId from './useComponentId';
+import useStoreState from './useStoreState';
 
-interface PlainObject {
-  [key: string]: unknown;
+export type PlainObject = { [name: string]: unknown };
+// https://stackoverflow.com/a/42028363/548170
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function isPlainObject(obj: any): obj is PlainObject {
+  return (obj && obj.constructor === Object) || false;
 }
+
 export default class Store<State, Key extends keyof State> {
   private state: Map<Key, State[Key]>;
 
@@ -52,8 +54,10 @@ export default class Store<State, Key extends keyof State> {
    */
   forceUpdateMemoized() {
     /* eslint-disable-next-line @typescript-eslint/no-unused-vars */
-    for (const [id, obj] of this.objStore) {
-      obj.forceUpdate();
+    for (const [key, obj] of this.objStore) {
+      if (obj.memoized) {
+        obj.forceUpdate();
+      }
     }
   }
 
@@ -67,27 +71,32 @@ export default class Store<State, Key extends keyof State> {
    *
    */
   setState(key: Key, partialNextState: Partial<State[Key]>) {
-    const existingState = this.state.get(key);
+    if (isPlainObject(partialNextState)) {
+      const existingState = this.state.get(key);
 
-    if (!existingState) {
-      throw new Error(`State doesnt have ${key}`);
+      if (!existingState) {
+        throw new Error(`State doesnt have ${key}`);
+      }
+
+      if (existingState === partialNextState) {
+        throw new Error(
+          `You cannot pass an existing state object to setState.  If you want to force a rerender, use forceUpdate(key)`,
+        );
+      }
+
+      const nextState = { ...existingState, ...partialNextState };
+
+      this.state.set(key, nextState);
+    } else {
+      this.state.set(key, partialNextState);
     }
 
-    if (existingState === partialNextState) {
-      throw new Error(
-        `You cannot pass an existing state object to setState.  If you want to force a rerender, use forceUpdate(key) or forceUpdateEverything()`,
-      );
-    }
+    this.forceUpdate(key);
+  }
 
-    const nextState = { ...existingState, ...partialNextState };
-
+  assignState(key: Key, nextState: State[Key]) {
     this.state.set(key, nextState);
-
-    const forceUpdate = this.objStore.get(key)?.forceUpdate;
-
-    if (forceUpdate) {
-      forceUpdate();
-    }
+    this.forceUpdate(key);
   }
 
   /**
@@ -135,6 +144,12 @@ export default class Store<State, Key extends keyof State> {
     };
   }
 
+  private createAssignState(key: Key) {
+    return (next: State[Key]) => {
+      return this.assignState(key, next);
+    };
+  }
+
   unsubscribe(key: Key) {
     this.objStore.delete(key);
   }
@@ -146,22 +161,9 @@ export default class Store<State, Key extends keyof State> {
     });
   }
 
-  useStore(key: Key, memoized: false) {
-    this.subscribe(key, useForceUpdateIfMounted(), memoized);
-
-    React.useEffect(
-      () => (): void => {
-        this.unsubscribe(key);
-      },
-      [key],
-    );
-
-    return this.getState(key);
-  }
-
   private createUseStore(key: Key, memoized: false) {
     return () => {
-      return this.useStore(key, memoized);
+      return useStoreState(this, key, memoized);
     };
   }
 
@@ -192,6 +194,7 @@ export default class Store<State, Key extends keyof State> {
       useStoreState: this.createUseStore(key, memoized),
       getState: this.createGetState(key),
       setState: this.createSetState(key),
+      assignState: this.createAssignState(key),
     };
   }
 }

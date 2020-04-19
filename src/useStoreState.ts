@@ -29,7 +29,7 @@ const useStoreState = <AppState, Key extends keyof AppState>(
     () => (): void => {
       store.unsubscribe(key);
     },
-    [key],
+    [store, key],
   );
 
   return store.getState(key);
