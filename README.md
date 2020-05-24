@@ -1,5 +1,5 @@
 # Set State is Great
-<p align='center'>A global store + setState + hooks integration.</p>
+<p align='center'>A global key/value store + setState + hooks integration.</p>
 
 Global state management without the ceremony.  No Context, Redux, actions, thunks, selectors, or anything that ends in "ducer."  Zero dependency (other than React of course).  [And now written in TypeScript!](https://github.com/kmurph73/set-state-is-great/pull/5)
 
@@ -15,44 +15,44 @@ yarn add set-state-is-great
 
 ## Creating the store
 
-Set State is Great (SSiG)'s data is organized by _stores_, which are objects that represent logical groupings of state (often pertaining to a particular component). EG: 
+Set State is Great (SSiG) is a key/value store.
 
 ```javascript
 import {Store} from 'set-state-is-great';
 
 const appState = {
-  main: {viewShown: 'Home'},
-  drawer: {open: false},
-  home: {title: 'Home'}
+  viewShown: 'Home',
+  colormode: 'dark',
+  drawer: {open: false, other: '?'},
 };
 
 const store = new Store(appState);
 ```
 
-In this scenario, `main`, `drawer`, and `home` are your _stores_.
+## setState & setPartialState
 
-Since SSiG is intended to be a global store, feel free to attach `store` to a top-level object for global access, eg:
+For mutating a store's data, there's `setState` & `setPartialState`:
 
-``` javascript
-window.App = {store};
+`setState` _replaces_ the state for a key:
+```javascript
+store.setState('drawer', {open: true, other: 'yup'});
 ```
 
-## setState
-
-For mutating a store's data, there's `setState`:
+Use `setPartialState` for partial updates to objects, it will _assign_ the new values to the existing object:
 
 ```javascript
-store.setState('drawer', {open: true});
+store.setPartialState('drawer', {open: true});
 ```
 
-## The `useStore` Hook
-SSiG's only hook (for now): `useStore`
+## `store.useNonNullState` & `store.useState`
+
+`useNonNullState` assumes that the state returned is not null or undefined:
 
 ```javascript
 import {store} from './constants';
 
 function Drawer() {
-  const {open} = store.useStore('drawer', ['open']);
+  const {open} = store.useNonNullState('drawer');
 
   return (
     <MuiDrawer open={open}>
@@ -61,38 +61,46 @@ function Drawer() {
   )
 }
 
-export default React.memo(Drawer);
+export default Drawer;
 ```
 
-Here we watch for changes to the `open` attr on the `drawer` store - the component will only rerender if `open` changes.
-
-However, despite only watching `open`, useStoreState returns `drawer`'s entire state.  So if `drawer` also a had a `rando` attr, you could grab that while you're at it:
+`useState` just returns the state as it is, so it could be null/undefined.
 
 ```javascript
-const {open, rando} = store.useStore('drawer', ['open']);
-```
-or just the entire state object:
-```javascript
-const drawerState = store.useStore('drawer', ['open']);
+import {store} from './constants';
+
+function Drawer() {
+  // state could be undefined/null here
+  const state = store.useState('drawer');
+
+  return (
+    <MuiDrawer open={!!state?.open}>
+      <div>just drawer things</div>
+    </MuiDrawer>
+  )
+}
+
+export default Drawer;
 ```
 
 ## getHelpers
 
-`getHelpers` gives you `setState` & `getState` & `useStore` scoped to a particular store.
+`getHelpers` gives you the following helpers scoped to a particular store:
+
+`useStoreState` `useNonNullState` `getState` `getNonNullState` `setState` `setPartialState`
 
 ```javascript
 import {store} from './constants';
+
+const {setPartialState: setState, useNonNullState: useDrawerState} = store.getHelpers('drawer')
 
 const close = () => {
   setState({open: false})
 };
 
-// getState() returns drawer's state
-// useStore is scoped to `drawer` and will observe changes to `open`
-const {getState, setState, useStore} = store.getHelpers('drawer', ['open'])
 
 function Drawer() {
-  const {open} = useStore();
+  const {open} = useDrawerState();
 
   return (
     <MuiDrawer open={open}>
@@ -101,43 +109,25 @@ function Drawer() {
   )
 }
 
-export default React.memo(Drawer);
+export default Drawer;
 ```
 
 ## getState
 
-You can access a store's state via `getState(store)`:
+You can access a store's state via `getState(key)` & `getNonNullState(key)`:
 
 ```javascript
 store.getState('drawer');
 ```
 
-## Watching for changes to any attribute in a store
-
-If you'd like to watch for changes to _any_ attr in a store, simply remove the `watchAttrs` parameter:
-
-```javascript
-const {useStore} = store.getHelpers('drawer');
-
-function Drawer() {
-  // will trigger a rerender upon any change to the drawer store
-  const {open} = useStore();
-  // ...
-}
-```
-
-## getFullState
+## getStateObj
 
 Get the central state object that holds all of the stores.
 
 ```javascript
-const allStores = store.getFullState();
-allStores.modal // {open: true, title: 'other'} 
+const allStores = store.getStateObj();
+allStores.modal // {open: true, title: 'yup'} 
 ```
-
-## Shallow compare
-
-SSiG performs a shallow comparison when setState is called.  [See here](src/store.ts#L45).
 
 ## Organizing the store (and some TypeScript)
 

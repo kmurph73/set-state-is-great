@@ -1,19 +1,29 @@
-import React from 'react';
 import { ForceUpdateIfMounted } from './types';
-import useForceUpdateIfMounted from './useForceUpdateIfMounted';
-import useComponentId from './useComponentId';
+import useStoreState from './useStoreState';
+
+export type PlainObject = { [name: string]: unknown };
+// https://stackoverflow.com/a/42028363/548170
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function isPlainObject(obj: any): obj is PlainObject {
+  return (obj && obj.constructor === Object) || false;
+}
+
+type StoreObj = { id: number; memoized: boolean; forceUpdate: ForceUpdateIfMounted };
+
+const findStoreObj = (objects: StoreObj[], id: number): StoreObj | undefined => {
+  for (let index = 0; index < objects.length; index++) {
+    const obj = objects[index];
+
+    if (obj.id === id) {
+      return obj;
+    }
+  }
+};
 
 export default class Store<State> {
   private state: State;
 
-  private objStore: Map<
-    string,
-    {
-      store: keyof State;
-      watchAttrs?: Array<string> | null;
-      forceUpdate: ForceUpdateIfMounted;
-    }
-  >;
+  private objStore: Map<keyof State, StoreObj[]>;
 
   constructor(state: State) {
     this.state = state;
@@ -22,9 +32,9 @@ export default class Store<State> {
 
   /**
    * Get the central state object that holds all of the stores.
-   * https://github.com/kmurph73/set-state-is-great#getfullstate
+   * https://github.com/kmurph73/set-state-is-great#getfull
    */
-  getFullStore() {
+  getStateObj(): State {
     return this.state;
   }
 
@@ -37,17 +47,18 @@ export default class Store<State> {
    *  store.forceUpdate('drawer');
    *
    */
-  forceUpdate<Key extends keyof State>(store: Key) {
-    /* eslint-disable-next-line @typescript-eslint/no-unused-vars */
-    for (const [id, obj] of this.objStore) {
-      if (obj.store === store) {
-        obj.forceUpdate();
+  forceUpdate(key: keyof State): void {
+    const objects = this.objStore.get(key);
+
+    if (objects) {
+      for (let index = 0; index < objects.length; index++) {
+        objects[index].forceUpdate();
       }
     }
   }
 
   /**
-   * force update all components that are "hooked" into SSiG
+   * force update all memo'd components
    *
    * https://github.com/kmurph73/set-state-is-great#force-updating-components
    *
@@ -55,10 +66,16 @@ export default class Store<State> {
    *  store.forceUpdateEverything();
    *
    */
-  forceUpdateEverything() {
+  forceUpdateMemoized(): void {
     /* eslint-disable-next-line @typescript-eslint/no-unused-vars */
-    for (const [id, obj] of this.objStore) {
-      obj.forceUpdate();
+    for (const [key, objects] of this.objStore) {
+      for (let index = 0; index < objects.length; index++) {
+        const obj = objects[index];
+
+        if (obj.memoized) {
+          obj.forceUpdate();
+        }
+      }
     }
   }
 
@@ -71,42 +88,31 @@ export default class Store<State> {
    *  store.setState('drawer', {open: true});
    *
    */
-  setState<Key extends keyof State>(store: Key, partialNextState: Partial<State[Key]>) {
-    const changedAttrs: Array<string> = [];
+  setPartialState<Key extends keyof State>(key: Key, partialNextState: Partial<State[Key]>): void {
+    if (isPlainObject(partialNextState)) {
+      const existingState = this.state[key];
 
-    const existingState = this.state[store];
-
-    if (existingState === partialNextState) {
-      throw new Error(
-        `You cannot pass an existing state object to setState.  If you want to force a rerender, use forceUpdate(store) or forceUpdateEverything()`,
-      );
-    }
-
-    const nextState = { ...this.state[store], ...partialNextState };
-
-    for (const attr in nextState) {
-      if (existingState[attr] !== nextState[attr]) {
-        existingState[attr] = nextState[attr];
-        changedAttrs.push(attr);
+      if (!existingState) {
+        throw new Error(`State doesnt have ${key}; use setState if you want to assign an object`);
       }
+
+      if (existingState === partialNextState) {
+        throw new Error(
+          `You cannot pass an existing state object to setState.  If you want to force a rerender, use forceUpdate(key)`,
+        );
+      }
+
+      Object.assign(existingState, partialNextState);
+    } else {
+      this.state[key] = partialNextState;
     }
 
-    /* eslint-disable-next-line @typescript-eslint/no-unused-vars */
-    for (const [id, obj] of this.objStore) {
-      if (obj.store === store && (!obj.watchAttrs || this.watchingAttrs(changedAttrs, obj.watchAttrs))) {
-        obj.forceUpdate();
-      }
-    }
+    this.forceUpdate(key);
   }
 
-  private watchingAttrs(changedAttrs: Array<string>, watchAttrs: Array<string>) {
-    for (let i = 0; i < changedAttrs.length; i++) {
-      if (watchAttrs.includes(changedAttrs[i])) {
-        return true;
-      }
-    }
-
-    return false;
+  setState<Key extends keyof State>(key: Key, nextState: State[Key]): void {
+    this.state[key] = nextState;
+    this.forceUpdate(key);
   }
 
   /**
@@ -118,11 +124,11 @@ export default class Store<State> {
    *  store.getState('drawer');
    *
    */
-  getState<Key extends keyof State>(s: Key) {
-    return this.state[s];
+  getState<Key extends keyof State>(key: Key): State[Key] {
+    return this.state[key];
   }
 
-  private createGetState<Key extends keyof State>(s: Key) {
+  private createGetState<Key extends keyof State>(key: Key) {
     /**
      * Access a (scoped) store's state via `store.getHelpers(storeName)`:
      *
@@ -133,12 +139,39 @@ export default class Store<State> {
      *  const drawerState = getState();
      *
      */
-    return () => {
-      return this.getState<Key>(s);
+    return (): State[Key] => {
+      return this.getState(key);
     };
   }
 
-  private createSetState<Key extends keyof State>(s: Key) {
+  getNonNullState<Key extends keyof State>(key: Key): NonNullable<State[Key]> {
+    const state = this.state[key];
+
+    if (state === undefined || state === null) {
+      throw new Error(`${key}'s state should be here`);
+    } else {
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+      return state!;
+    }
+  }
+
+  private createGetNonNullState<Key extends keyof State>(key: Key) {
+    /**
+     * Access a (scoped) store's state via `store.getHelpers(storeName)`:
+     *
+     * https://github.com/kmurph73/set-state-is-great#gethelpers
+     *
+     * @example
+     *  const {getState} = store.getHelpers('drawer');
+     *  const drawerState = getState();
+     *
+     */
+    return (): NonNullable<State[Key]> => {
+      return this.getNonNullState(key);
+    };
+  }
+
+  private createSetPartialState<Key extends keyof State>(key: Key) {
     /**
      * *set* values on a (scoped) store via `store.getHelpers(storeName)`
      *
@@ -149,65 +182,74 @@ export default class Store<State> {
      *  setState({open: true});
      *
      */
-    return (next: Partial<State[Key]>) => {
-      return this.setState(s, next);
+    return (next: Partial<State[Key]>): void => {
+      return this.setPartialState(key, next);
     };
   }
 
-  private unsubscribe(key: string) {
-    this.objStore.delete(key);
+  private createSetState<Key extends keyof State>(key: Key) {
+    return (next: State[Key]): void => {
+      return this.setState(key, next);
+    };
   }
 
-  private subscribe<Key extends keyof State, KeyOfStore extends keyof State[Key]>(
-    key: string,
-    store: Key,
-    forceUpdate: ForceUpdateIfMounted,
-    watchAttrs?: Array<KeyOfStore> | null,
-  ) {
-    this.objStore.set(key, {
-      store: store,
-      watchAttrs: watchAttrs as Array<string>,
-      forceUpdate: forceUpdate,
-    });
+  unsubscribe<Key extends keyof State>(key: Key, id: number): void {
+    const arr = this.objStore.get(key);
+
+    if (arr) {
+      for (let index = 0; index < arr.length; index++) {
+        const obj = arr[index];
+
+        if (obj.id === id) {
+          arr.splice(index, 1);
+          return;
+        }
+      }
+    }
   }
 
-  /**
-   * access and observe changes to a store's state
-   *
-   * https://github.com/kmurph73/set-state-is-great#the-usestore-hook
-   *
-   * @example
-   *
-   * function Drawer() {
-   *   const {open} = store.useStore('drawer', ['open']);
-   *   return (
-   *     <MuiDrawer open={open}>
-   *       <div>just drawer things</div>
-   *     </MuiDrawer>
-   *   )
-   * }
-   */
-  useStore<Key extends keyof State, KeyOfStore extends keyof State[Key]>(store: Key, watchAttrs?: Array<KeyOfStore>) {
-    const id = useComponentId();
-    const key = id + '-' + store;
-    this.subscribe(key, store, useForceUpdateIfMounted(), watchAttrs);
+  subscribe<Key extends keyof State>(key: Key, id: number, forceUpdate: ForceUpdateIfMounted, memoized: boolean): void {
+    const arr = this.objStore.get(key);
 
-    React.useEffect(
-      () => (): void => {
-        this.unsubscribe(key);
-      },
-      [key],
-    );
+    if (arr) {
+      const obj = findStoreObj(arr, id);
 
-    return this.getState(store);
+      if (obj) {
+        obj.forceUpdate = forceUpdate;
+      } else {
+        arr.push({ id, forceUpdate, memoized });
+      }
+    } else {
+      this.objStore.set(key, [{ id, forceUpdate, memoized }]);
+    }
   }
 
-  private createUseStore<Key extends keyof State, KeyOfStore extends keyof State[Key]>(
-    store: Key,
-    watchAttrs?: Array<KeyOfStore>,
-  ) {
-    return () => {
-      return this.useStore(store, watchAttrs);
+  useState<Key extends keyof State>(key: Key, memoized = false): State[Key] {
+    // eslint-disable-next-line react-hooks/rules-of-hooks
+    return useStoreState(this, key, memoized);
+  }
+
+  private createUseStoreState<Key extends keyof State>(key: Key, memoized = false) {
+    return (): State[Key] => {
+      return useStoreState(this, key, memoized);
+    };
+  }
+
+  useNonNullState<Key extends keyof State>(key: Key, memoized = false): NonNullable<State[Key]> {
+    // eslint-disable-next-line react-hooks/rules-of-hooks
+    const state = useStoreState(this, key, memoized);
+
+    if (state) {
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+      return state!;
+    } else {
+      throw new Error(`${key}'s state should be here`);
+    }
+  }
+
+  private createUseNonNullState<Key extends keyof State>(key: Key, memoized = false) {
+    return (): NonNullable<State[Key]> => {
+      return this.useNonNullState(key, memoized);
     };
   }
 
@@ -233,11 +275,15 @@ export default class Store<State> {
    *   )
    * }
    */
-  getHelpers<Key extends keyof State, KeyOfStore extends keyof State[Key]>(store: Key, watchAttrs?: Array<KeyOfStore>) {
+  // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
+  getHelpers<Key extends keyof State>(key: Key, memoized = false) {
     return {
-      useStoreState: this.createUseStore(store, watchAttrs),
-      getState: this.createGetState(store),
-      setState: this.createSetState(store),
+      useStoreState: this.createUseStoreState(key, memoized),
+      useNonNullState: this.createUseNonNullState(key, memoized),
+      getState: this.createGetState(key),
+      getNonNullState: this.createGetNonNullState(key),
+      setState: this.createSetState(key),
+      setPartialState: this.createSetPartialState(key),
     };
   }
 }

@@ -1,9 +1,3 @@
-export interface QueryObject {
-  store: string;
-  watchAttrs?: Array<string> | null;
-  name?: string;
-}
-
 // React's TS signature for useReducer has a required argument
 // https://github.com/DefinitelyTyped/DefinitelyTyped/blob/master/types/react/index.d.ts#L802
 // however, our forceUpdate expects nothing to be passed in
