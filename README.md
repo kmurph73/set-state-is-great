@@ -1,7 +1,7 @@
 # Set State is Great
-<p align='center'>A global key/value store + setState + hooks integration.</p>
+<p align='center'>A global store + setState + hooks integration.</p>
 
-Global state management without the ceremony.  No Context, Redux, actions, thunks, selectors, or anything that ends in "ducer."  Zero dependency (other than React of course).  [And now written in TypeScript!](https://github.com/kmurph73/set-state-is-great/pull/5)
+Global state management without the ceremony.  No Context, Redux, actions, thunks, selectors, or anything that ends in "ducer."  Zero dependency (other than React of course).  Written in & optimized for TypeScript.
 
 ## Installing
 
@@ -15,7 +15,7 @@ yarn add set-state-is-great
 
 ## Creating the store
 
-Set State is Great (SSiG) is a key/value store.
+Set State is Great (SSiG) is, at its core, just a key/value store.
 
 ```javascript
 import {Store} from 'set-state-is-great';
@@ -64,7 +64,7 @@ function Drawer() {
 export default Drawer;
 ```
 
-`useState` just returns the state as it is, so it could be null/undefined.
+`useState` returns the state as it is, so it could be null/undefined.
 
 ```javascript
 import {store} from './constants';
@@ -118,6 +118,7 @@ You can access a store's state via `getState(key)` & `getNonNullState(key)`:
 
 ```javascript
 store.getState('drawer');
+store.getNonNullState('drawer');
 ```
 
 ## getStateObj
@@ -173,25 +174,25 @@ SSiG is written in & optimized for TS, and it's highly recommended that you use 
 To do so, define your store's state like so:
 
 ``` TypeScript
-export interface DrawerState {
-  "open": boolean;
+type DrawerState = {
+  open: boolean;
 }
 
-export interface ModalState {
-  "open": boolean;
-  "title": string;
+type ModalState = {
+  open: boolean;
+  title: string;
 }
 
-export interface AppState {
-  "drawer": DrawerState;
-  "modal": ModalState;
+export type AppState = {
+  drawer?: DrawerState;
+  modal?: ModalState;
 }
 ```
 
 Then pass in AppState as a Generic when creating your store:
 
 ```TypeScript
-const store = new Store<AppState>(appState);
+const store = new Store<AppState>({});
 ```
 
 Now TS will be able to check that you're passing in the correct parameters into things like `useStore`, eg:
@@ -209,29 +210,7 @@ const drawerState = store.useStore('blah');
 ``` TypeScript
 // forceUpdate all components watching a particular store
 store.forceUpdate('drawer');
-
-// forceUpdate all components being watched by SSiG
-store.forceUpdateEverything();
 ```
-
-## Motivation
-
-SSiG was inspired by my abuse of [easy-peasy][2] while building a medium-sized React SPA.  I wasn't sure why I was supposed to create an `action` just to add an item to an array, when you can just do: 
-```javascript 
-setState({arr: [...arr, item]});
-```
-
-Replacing easy-peasy with SSiG in my app was quite easy ... and everything seems to Just Work.
-
-## How does it work?
-
-When `useStore` is called, a `forceUpdate` function is created and stored away (which is dereferenced upon component dismount, of course).
-
-When `setState` is called, it finds all of the changed attributes for that store, then finds the components watching those attrs, then `forceUpdate`s them.
-
-## Prior art
-
-[easy-peasy][2]
 
 ## Todo
 
@@ -241,6 +220,3 @@ When `setState` is called, it finds all of the changed attributes for that store
 ## License
 
 MIT
-
-[1]: https://github.com/CharlesStover/use-force-update
-[2]: https://github.com/ctrlplusb/easy-peasy
