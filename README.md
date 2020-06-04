@@ -44,15 +44,15 @@ Use `setPartialState` for partial updates to objects, it will _assign_ the new v
 store.setPartialState('drawer', {open: true});
 ```
 
-## `store.useNonNullState` & `store.useState`
+## `store.useState`
 
-`useNonNullState` assumes that the state returned is not null or undefined:
+Watch for changes to a particular key using `store.useState`
 
 ```javascript
 import {store} from './constants';
 
 function Drawer() {
-  const {open} = store.useNonNullState('drawer');
+  const {open} = store.useState('drawer');
 
   return (
     <MuiDrawer open={open}>
@@ -64,30 +64,21 @@ function Drawer() {
 export default Drawer;
 ```
 
-`useState` returns the state as it is, so it could be null/undefined.
+## `store.useNonNullState`
+
+If the value could be null or undefined, but you expect it not to be, `useNonNullState` will throw an error if the value is null or undefined.
 
 ```javascript
-import {store} from './constants';
-
-function Drawer() {
-  // state could be undefined/null here
-  const state = store.useState('drawer');
-
-  return (
-    <MuiDrawer open={!!state?.open}>
-      <div>just drawer things</div>
-    </MuiDrawer>
-  )
-}
-
-export default Drawer;
+  const {open} = store.useNonNullState('drawer')
 ```
+
+If using TypeScript, the returning value will be [non-nullified](https://www.typescriptlang.org/docs/handbook/utility-types.html#nonnullablet)
 
 ## getHelpers
 
-`getHelpers` gives you the following helpers scoped to a particular store:
+`getHelpers` gives you the following helpers scoped to a particular key:
 
-`useStoreState` `useNonNullState` `getState` `getNonNullState` `setState` `setPartialState`
+`useStoreState`, `useNonNullState`, `getState`, `getNonNullState`, `setState` & `setPartialState`
 
 ```javascript
 import {store} from './constants';
@@ -97,7 +88,6 @@ const {setPartialState: setState, useNonNullState: useDrawerState} = store.getHe
 const close = () => {
   setState({open: false})
 };
-
 
 function Drawer() {
   const {open} = useDrawerState();
@@ -184,6 +174,7 @@ type ModalState = {
 }
 
 export type AppState = {
+  colormode: 'dark' | 'light';
   drawer?: DrawerState;
   modal?: ModalState;
 }
@@ -192,23 +183,15 @@ export type AppState = {
 Then pass in AppState as a Generic when creating your store:
 
 ```TypeScript
-const store = new Store<AppState>({});
+const store = new Store<AppState>({colormode: 'dark'});
 ```
 
-Now TS will be able to check that you're passing in the correct parameters into things like `useStore`, eg:
-
-```TypeScript
-// TS will warn that there's no "blah" attr in the drawer store
-const drawerState = store.useStore('drawer', ['blah']);
-
-// TS will warn that there's no "blah" store
-const drawerState = store.useStore('blah');
-```
+Now `setState` et al. will check that you're passing in the correct types.
 
 ## Force updating components
 
 ``` TypeScript
-// forceUpdate all components watching a particular store
+// forceUpdate all components watching a particular key
 store.forceUpdate('drawer');
 ```
 
