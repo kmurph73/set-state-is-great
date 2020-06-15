@@ -57,13 +57,19 @@ export default class Store<State> {
     }
   }
 
+  private createForceUpdate<Key extends keyof State>(key: Key) {
+    return (): void => {
+      return this.forceUpdate(key);
+    };
+  }
+
   /**
    * force update all memo'd components
    *
    * https://github.com/kmurph73/set-state-is-great#force-updating-components
    *
    * @example
-   *  store.forceUpdateEverything();
+   *  store.forceUpdateMemoized();
    *
    */
   forceUpdateMemoized(): void {
@@ -283,6 +289,7 @@ export default class Store<State> {
       getState: this.createGetState(key),
       getNonNullState: this.createGetNonNullState(key),
       setState: this.createSetState(key),
+      forceUpdate: this.createForceUpdate(key),
       setPartialState: this.createSetPartialState(key),
     };
   }
