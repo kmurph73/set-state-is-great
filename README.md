@@ -1,7 +1,7 @@
 # Set State is Great
 <p align='center'>A global store + setState + hooks integration.</p>
 
-Global state management without the ceremony.  No Context, Redux, actions, thunks, selectors, or anything that ends in "ducer."  Zero dependency (other than React of course).  [And now written in TypeScript!](https://github.com/kmurph73/set-state-is-great/pull/5)
+Global state management without the ceremony.  No Context, Redux, actions, thunks, selectors, or anything that ends in "ducer."  Zero dependency (other than React of course).  Written in & optimized for TypeScript.
 
 ## Installing
 
@@ -15,44 +15,44 @@ yarn add set-state-is-great
 
 ## Creating the store
 
-Set State is Great (SSiG)'s data is organized by _stores_, which are objects that represent logical groupings of state (often pertaining to a particular component). EG: 
+Set State is Great (SSiG) is, at its core, just a key/value store.
 
 ```javascript
 import {Store} from 'set-state-is-great';
 
 const appState = {
-  main: {viewShown: 'Home'},
-  drawer: {open: false},
-  home: {title: 'Home'}
+  viewShown: 'Home',
+  colormode: 'dark',
+  drawer: {open: false, other: '?'},
 };
 
 const store = new Store(appState);
 ```
 
-In this scenario, `main`, `drawer`, and `home` are your _stores_.
+## setState & setPartialState
 
-Since SSiG is intended to be a global store, feel free to attach `store` to a top-level object for global access, eg:
+For mutating a store's data, there's `setState` & `setPartialState`:
 
-``` javascript
-window.App = {store};
+`setState` _replaces_ the state for a key:
+```javascript
+store.setState('drawer', {open: true, other: 'yup'});
 ```
 
-## setState
-
-For mutating a store's data, there's `setState`:
+Use `setPartialState` for partial updates to objects, it will _assign_ the new values to the existing object:
 
 ```javascript
-store.setState('drawer', {open: true});
+store.setPartialState('drawer', {open: true});
 ```
 
-## The `useStore` Hook
-SSiG's only hook (for now): `useStore`
+## `store.useState`
+
+Watch for changes to a particular key using `store.useState`
 
 ```javascript
 import {store} from './constants';
 
 function Drawer() {
-  const {open} = store.useStore('drawer', ['open']);
+  const {open} = store.useState('drawer');
 
   return (
     <MuiDrawer open={open}>
@@ -61,38 +61,36 @@ function Drawer() {
   )
 }
 
-export default React.memo(Drawer);
+export default Drawer;
 ```
 
-Here we watch for changes to the `open` attr on the `drawer` store - the component will only rerender if `open` changes.
+## `store.useNonNullState`
 
-However, despite only watching `open`, useStoreState returns `drawer`'s entire state.  So if `drawer` also a had a `rando` attr, you could grab that while you're at it:
+If the value could be null or undefined, but you expect it not to be, `useNonNullState` will throw an error if the value is null or undefined.
 
 ```javascript
-const {open, rando} = store.useStore('drawer', ['open']);
+  const {open} = store.useNonNullState('drawer')
 ```
-or just the entire state object:
-```javascript
-const drawerState = store.useStore('drawer', ['open']);
-```
+
+If using TypeScript, the returning value will be [non-nullified](https://www.typescriptlang.org/docs/handbook/utility-types.html#nonnullablet)
 
 ## getHelpers
 
-`getHelpers` gives you `setState` & `getState` & `useStore` scoped to a particular store.
+`getHelpers` gives you the following helpers scoped to a particular key:
+
+`useStoreState`, `useNonNullState`, `getState`, `getNonNullState`, `setState` & `setPartialState`
 
 ```javascript
 import {store} from './constants';
+
+const {setPartialState: setState, useNonNullState: useDrawerState} = store.getHelpers('drawer')
 
 const close = () => {
   setState({open: false})
 };
 
-// getState() returns drawer's state
-// useStore is scoped to `drawer` and will observe changes to `open`
-const {getState, setState, useStore} = store.getHelpers('drawer', ['open'])
-
 function Drawer() {
-  const {open} = useStore();
+  const {open} = useDrawerState();
 
   return (
     <MuiDrawer open={open}>
@@ -101,43 +99,26 @@ function Drawer() {
   )
 }
 
-export default React.memo(Drawer);
+export default Drawer;
 ```
 
 ## getState
 
-You can access a store's state via `getState(store)`:
+You can access a store's state via `getState(key)` & `getNonNullState(key)`:
 
 ```javascript
 store.getState('drawer');
+store.getNonNullState('drawer');
 ```
 
-## Watching for changes to any attribute in a store
-
-If you'd like to watch for changes to _any_ attr in a store, simply remove the `watchAttrs` parameter:
-
-```javascript
-const {useStore} = store.getHelpers('drawer');
-
-function Drawer() {
-  // will trigger a rerender upon any change to the drawer store
-  const {open} = useStore();
-  // ...
-}
-```
-
-## getFullState
+## getStateObj
 
 Get the central state object that holds all of the stores.
 
 ```javascript
-const allStores = store.getFullState();
-allStores.modal // {open: true, title: 'other'} 
+const allStores = store.getStateObj();
+allStores.modal // {open: true, title: 'yup'} 
 ```
-
-## Shallow compare
-
-SSiG performs a shallow comparison when setState is called.  [See here](src/store.ts#L45).
 
 ## Organizing the store (and some TypeScript)
 
@@ -183,65 +164,36 @@ SSiG is written in & optimized for TS, and it's highly recommended that you use 
 To do so, define your store's state like so:
 
 ``` TypeScript
-export interface DrawerState {
-  "open": boolean;
+type DrawerState = {
+  open: boolean;
 }
 
-export interface ModalState {
-  "open": boolean;
-  "title": string;
+type ModalState = {
+  open: boolean;
+  title: string;
 }
 
-export interface AppState {
-  "drawer": DrawerState;
-  "modal": ModalState;
+export type AppState = {
+  colormode: 'dark' | 'light';
+  drawer?: DrawerState;
+  modal?: ModalState;
 }
 ```
 
 Then pass in AppState as a Generic when creating your store:
 
 ```TypeScript
-const store = new Store<AppState>(appState);
+const store = new Store<AppState>({colormode: 'dark'});
 ```
 
-Now TS will be able to check that you're passing in the correct parameters into things like `useStore`, eg:
-
-```TypeScript
-// TS will warn that there's no "blah" attr in the drawer store
-const drawerState = store.useStore('drawer', ['blah']);
-
-// TS will warn that there's no "blah" store
-const drawerState = store.useStore('blah');
-```
+Now `setState` et al. will check that you're passing in the correct types.
 
 ## Force updating components
 
 ``` TypeScript
-// forceUpdate all components watching a particular store
+// forceUpdate all components watching a particular key
 store.forceUpdate('drawer');
-
-// forceUpdate all components being watched by SSiG
-store.forceUpdateEverything();
 ```
-
-## Motivation
-
-SSiG was inspired by my abuse of [easy-peasy][2] while building a medium-sized React SPA.  I wasn't sure why I was supposed to create an `action` just to add an item to an array, when you can just do: 
-```javascript 
-setState({arr: [...arr, item]});
-```
-
-Replacing easy-peasy with SSiG in my app was quite easy ... and everything seems to Just Work.
-
-## How does it work?
-
-When `useStore` is called, a `forceUpdate` function is created and stored away (which is dereferenced upon component dismount, of course).
-
-When `setState` is called, it finds all of the changed attributes for that store, then finds the components watching those attrs, then `forceUpdate`s them.
-
-## Prior art
-
-[easy-peasy][2]
 
 ## Todo
 
@@ -251,6 +203,3 @@ When `setState` is called, it finds all of the changed attributes for that store
 ## License
 
 MIT
-
-[1]: https://github.com/CharlesStover/use-force-update
-[2]: https://github.com/ctrlplusb/easy-peasy
