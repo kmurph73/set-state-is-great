@@ -78,7 +78,7 @@ If using TypeScript, the returning value will be [non-nullified](https://www.typ
 
 `getHelpers` gives you the following helpers scoped to a particular key:
 
-`useStoreState`, `useNonNullState`, `getState`, `getNonNullState`, `setState` & `setPartialState`
+`useStoreState`, `useNonNullState`, `getState`, `getNonNullState`, `forceUpdate`, `setState` & `setPartialState`
 
 ```javascript
 import {store} from './constants';
