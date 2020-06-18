@@ -86,12 +86,12 @@ export default class Store<State> {
   }
 
   /**
-   * *set* values on a store.
+   * *assign* values to an object value
    *
-   * https://github.com/kmurph73/set-state-is-great#setstate
+   * https://github.com/kmurph73/set-state-is-great#setstate--setpartialstate
    *
    * @example
-   *  store.setState('drawer', {open: true});
+   *  store.setPartialState('drawer', {open: true});
    *
    */
   setPartialState<Key extends keyof State>(key: Key, partialNextState: Partial<State[Key]>): void {
@@ -110,19 +110,28 @@ export default class Store<State> {
 
       Object.assign(existingState, partialNextState);
     } else {
-      this.state[key] = partialNextState;
+      throw new Error('You must pass in a plain JS object to setPartialState');
     }
 
     this.forceUpdate(key);
   }
 
+  /**
+   * set a value for a key
+   *
+   * https://github.com/kmurph73/set-state-is-great#setstate--setpartialstate
+   *
+   * @example
+   *  store.setState('viewShown', 'Home');
+   *
+   */
   setState<Key extends keyof State>(key: Key, nextState: State[Key]): void {
     this.state[key] = nextState;
     this.forceUpdate(key);
   }
 
   /**
-   * Access a store's state via `store.getState(store)`:
+   * Get a key's state via `store.getState(key)`:
    *
    * https://github.com/kmurph73/set-state-is-great#getstate
    *
@@ -136,7 +145,7 @@ export default class Store<State> {
 
   private createGetState<Key extends keyof State>(key: Key) {
     /**
-     * Access a (scoped) store's state via `store.getHelpers(storeName)`:
+     * Access a (scoped) key's state via `store.getHelpers(storeName)`:
      *
      * https://github.com/kmurph73/set-state-is-great#gethelpers
      *
@@ -150,6 +159,15 @@ export default class Store<State> {
     };
   }
 
+  /**
+   * Get a non-nullified key's state w/ `store.getNonNullState(key)`:
+   *
+   * https://github.com/kmurph73/set-state-is-great#getstate
+   *
+   * @example
+   *  store.getNonNullState('drawer');
+   *
+   */
   getNonNullState<Key extends keyof State>(key: Key): NonNullable<State[Key]> {
     const state = this.state[key];
 

@@ -1,6 +1,6 @@
 {
   "name": "set-state-is-great",
-  "version": "0.0.14",
+  "version": "0.0.15",
   "description": "Global store + setState + hooks integration",
   "license": "MIT",
   "types": "./src/index.ts",
