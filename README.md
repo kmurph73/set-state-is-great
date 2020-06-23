@@ -113,11 +113,11 @@ store.getNonNullState('drawer');
 
 ## getStateObj
 
-Get the central state object that holds all of the stores.
+Get the full state object.
 
 ```javascript
-const allStores = store.getStateObj();
-allStores.modal // {open: true, title: 'yup'} 
+const data = store.getStateObj();
+data.drawer // {open: true, other: 'yup'} 
 ```
 
 ## Organizing the store (and some TypeScript)
@@ -146,7 +146,7 @@ import {AppState} from './types';
 import {setStore} from './constants';
 
 const appState: AppState = {
-  drawer: {open: false},
+  drawer: {open: false, other: '?'},
   modal: {open: false, title: 'nada'},
 }
 
@@ -166,6 +166,7 @@ To do so, define your store's state like so:
 ``` TypeScript
 type DrawerState = {
   open: boolean;
+  other: string;
 }
 
 type ModalState = {
