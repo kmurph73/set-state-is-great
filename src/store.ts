@@ -131,6 +131,22 @@ export default class Store<State> {
   }
 
   /**
+   * set state & rerender _only_ if the new val is different from the old
+   *
+   * @example
+   *  store.setStateIfDifferent('breakpoint', 'sm');
+   *
+   */
+  setStateIfDifferent<Key extends keyof State>(key: Key, nextState: State[Key]): void {
+    if (this.state[key] === nextState) {
+      return;
+    }
+
+    this.state[key] = nextState;
+    this.forceUpdate(key);
+  }
+
+  /**
    * Get a key's state via `store.getState(key)`:
    *
    * https://github.com/kmurph73/set-state-is-great#getstate
