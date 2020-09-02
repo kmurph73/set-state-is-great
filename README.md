@@ -83,10 +83,10 @@ If using TypeScript, the returning value will be [non-nullified](https://www.typ
 ```javascript
 import {store} from './constants';
 
-const {setPartialState: setState, useNonNullState: useDrawerState} = store.getHelpers('drawer')
+const {setPartialState, useNonNullState: useDrawerState} = store.getHelpers('drawer')
 
 const close = () => {
-  setState({open: false})
+  setPartialState({open: false})
 };
 
 function Drawer() {
