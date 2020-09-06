@@ -167,9 +167,7 @@ export default class Store<State> {
    */
   setPartialStateIfDifferent<Key extends keyof State>(key: Key, partialNextState: Partial<State[Key]>): void {
     if (isPlainObject(partialNextState)) {
-      let differs = false;
       const existingState = this.state[key];
-
       if (!existingState) {
         throw new Error(`State doesnt have ${key}; use setState if you want to assign an object`);
       }
@@ -180,6 +178,7 @@ export default class Store<State> {
         );
       }
 
+      let differs = false;
       for (const prop in partialNextState) {
         if (existingState[prop] !== partialNextState[prop]) {
           differs = true;
