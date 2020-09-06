@@ -311,10 +311,10 @@ export default class Store<State> {
     const state = useStoreState(this, key, memoized);
 
     if (state === null || state === undefined) {
+      throw new Error(`${key}'s state should be here`);
+    } else {
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       return state!;
-    } else {
-      throw new Error(`${key}'s state should be here`);
     }
   }
 
