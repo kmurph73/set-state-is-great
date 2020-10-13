@@ -18,7 +18,7 @@ yarn add set-state-is-great
 Set State is Great (SSiG) is, at its core, just a key/value store.
 
 ```javascript
-import {Store} from 'set-state-is-great';
+import { Store } from 'set-state-is-great';
 
 const appState = {
   viewShown: 'Home',
@@ -35,13 +35,13 @@ For mutating a store's data, there's `setState` & `setPartialState`:
 
 `setState` _replaces_ the state for a key:
 ```javascript
-store.setState('drawer', {open: true, other: 'yup'});
+store.setState('drawer', { open: true, other: 'yup' });
 ```
 
 Use `setPartialState` for partial updates to objects, it will _assign_ the new values to the existing object:
 
 ```javascript
-store.setPartialState('drawer', {open: true});
+store.setPartialState('drawer', { open: true });
 ```
 
 ## `store.useState`
@@ -52,7 +52,7 @@ Watch for changes to a particular key using `store.useState`
 import {store} from './constants';
 
 function Drawer() {
-  const {open} = store.useState('drawer');
+  const { open } = store.useState('drawer');
 
   return (
     <MuiDrawer open={open}>
@@ -69,28 +69,28 @@ export default Drawer;
 If the value could be null or undefined, but you expect it not to be, `useNonNullState` will throw an error if the value is null or undefined.
 
 ```javascript
-  const {open} = store.useNonNullState('drawer')
+  const { open } = store.useNonNullState('drawer')
 ```
 
-If using TypeScript, the returning value will be [non-nullified](https://www.typescriptlang.org/docs/handbook/utility-types.html#nonnullablet)
+If using TypeScript, the returning value will be [non-nullified](https://www.typescriptlang.org/docs/handbook/utility-types.html#nonnullabletype)
 
-## getHelpers
+## getScopedFns
 
-`getHelpers` gives you the following helpers scoped to a particular key:
+`getScopedFns` gives you the following functions scoped to a particular key:
 
-`useStoreState`, `useNonNullState`, `getState`, `getNonNullState`, `forceUpdate`, `setState` & `setPartialState`
+`useStoreState`, `useNonNullState`, `getState`, `getNonNullState`, `forceUpdate`, `setState`, `setPartialState`, `setStateIfDifferent`, `placeState`
 
 ```javascript
-import {store} from './constants';
+import { store } from './constants';
 
-const {setPartialState, useNonNullState: useDrawerState} = store.getHelpers('drawer')
+const { setPartialState, useNonNullState: useDrawerState } = store.getScopedFns('drawer');
 
 const close = () => {
   setPartialState({open: false})
 };
 
 function Drawer() {
-  const {open} = useDrawerState();
+  const { open } = useDrawerState();
 
   return (
     <MuiDrawer open={open}>
@@ -109,6 +109,16 @@ You can access a store's state via `getState(key)` & `getNonNullState(key)`:
 ```javascript
 store.getState('drawer');
 store.getNonNullState('drawer');
+```
+
+## placeState & setStateIfDifferent
+
+`placeState` & `placePartialState` will set & assign values, and NOT rerender any components
+
+`setStateIfDifferent` will only rerender watching components if the value differs.  EG:
+
+``` TypeScript
+store.setStateIfDifferent('breakpoint', 'sm');`
 ```
 
 ## getStateObj
@@ -133,7 +143,7 @@ export var store: Store<AppState>;
 
 export const setStore = (theStore: Store<AppState>) => {
   store = theStore
-  window.App = {store: theStore}
+  window.App = { store: theStore }
 }
 ```
 
@@ -141,13 +151,13 @@ Then you can set it when creating your store:
 
 ``` TypeScript
 // store.ts
-import {Store} from 'set-state-is-great';
-import {AppState} from './types';
-import {setStore} from './constants';
+import { Store } from 'set-state-is-great';
+import { AppState } from './types';
+import { setStore } from './constants';
 
 const appState: AppState = {
-  drawer: {open: false, other: '?'},
-  modal: {open: false, title: 'nada'},
+  drawer: { open: false, other: '?' },
+  modal: { open: false, title: 'nada' },
 }
 
 const store = new Store<AppState>(appState);
@@ -155,7 +165,7 @@ const store = new Store<AppState>(appState);
 setStore(store);
 ```
 
-Then you can import the store from any file: `import {store} from './constants';`
+Then you can import the store from any file: `import { store } from './constants';`
 
 ## TypeScript
 
@@ -184,7 +194,7 @@ export type AppState = {
 Then pass in AppState as a Generic when creating your store:
 
 ```TypeScript
-const store = new Store<AppState>({colormode: 'dark'});
+const store = new Store<AppState>({ colormode: "dark" });
 ```
 
 Now `setState` et al. will check that you're passing in the correct types.

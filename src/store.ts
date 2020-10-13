@@ -116,6 +116,12 @@ export default class Store<State> {
     this.forceUpdate(key);
   }
 
+  private createSetPartialState<Key extends keyof State>(key: Key) {
+    return (next: Partial<State[Key]>): void => {
+      return this.setPartialState(key, next);
+    };
+  }
+
   /**
    * set a value for a key
    *
@@ -128,6 +134,12 @@ export default class Store<State> {
   setState<Key extends keyof State>(key: Key, nextState: State[Key]): void {
     this.state[key] = nextState;
     this.forceUpdate(key);
+  }
+
+  private createSetState<Key extends keyof State>(key: Key) {
+    return (next: State[Key]): void => {
+      return this.setState(key, next);
+    };
   }
 
   /**
@@ -147,6 +159,48 @@ export default class Store<State> {
   }
 
   /**
+   * set partial state & rerender _only_ if the new val is different from the old
+   *
+   * @example
+   *  store.setPartialStateIfDifferent('user_form', {name: 'Jim'});
+   *
+   */
+  setPartialStateIfDifferent<Key extends keyof State>(key: Key, partialNextState: Partial<State[Key]>): void {
+    if (isPlainObject(partialNextState)) {
+      const existingState = this.state[key];
+      if (!existingState) {
+        throw new Error(`State doesnt have ${key}; use setState if you want to assign an object`);
+      }
+
+      if (existingState === partialNextState) {
+        throw new Error(
+          `You cannot pass an existing state object to setState.  If you want to force a rerender, use forceUpdate(key)`,
+        );
+      }
+
+      let differs = false;
+      for (const prop in partialNextState) {
+        if (existingState[prop] !== partialNextState[prop]) {
+          differs = true;
+        }
+      }
+
+      if (differs) {
+        Object.assign(existingState, partialNextState);
+        this.forceUpdate(key);
+      }
+    } else {
+      throw new Error('You must pass in a plain JS object to setPartialState');
+    }
+  }
+
+  private createSetPartialStateIfDifferent<Key extends keyof State>(key: Key) {
+    return (next: Partial<State[Key]>): void => {
+      return this.setPartialStateIfDifferent(key, next);
+    };
+  }
+
+  /**
    * Get a key's state via `store.getState(key)`:
    *
    * https://github.com/kmurph73/set-state-is-great#getstate
@@ -160,16 +214,6 @@ export default class Store<State> {
   }
 
   private createGetState<Key extends keyof State>(key: Key) {
-    /**
-     * Access a (scoped) key's state via `store.getHelpers(storeName)`:
-     *
-     * https://github.com/kmurph73/set-state-is-great#gethelpers
-     *
-     * @example
-     *  const {getState} = store.getHelpers('drawer');
-     *  const drawerState = getState();
-     *
-     */
     return (): State[Key] => {
       return this.getState(key);
     };
@@ -196,40 +240,27 @@ export default class Store<State> {
   }
 
   private createGetNonNullState<Key extends keyof State>(key: Key) {
-    /**
-     * Access a (scoped) store's state via `store.getHelpers(storeName)`:
-     *
-     * https://github.com/kmurph73/set-state-is-great#gethelpers
-     *
-     * @example
-     *  const {getState} = store.getHelpers('drawer');
-     *  const drawerState = getState();
-     *
-     */
     return (): NonNullable<State[Key]> => {
       return this.getNonNullState(key);
     };
   }
 
-  private createSetPartialState<Key extends keyof State>(key: Key) {
-    /**
-     * *set* values on a (scoped) store via `store.getHelpers(storeName)`
-     *
-     * https://github.com/kmurph73/set-state-is-great#gethelpers
-     *
-     * @example
-     *  const {getState} = store.getHelpers('drawer');
-     *  setState({open: true});
-     *
-     */
-    return (next: Partial<State[Key]>): void => {
-      return this.setPartialState(key, next);
-    };
+  /**
+   * set a value for a key, dont rerender any watching stores
+   *
+   * https://github.com/kmurph73/set-state-is-great#placestate
+   *
+   * @example
+   *  store.placeState('viewShown', 'Home');
+   *
+   */
+  placeState<Key extends keyof State>(key: Key, nextState: State[Key]): void {
+    this.state[key] = nextState;
   }
 
-  private createSetState<Key extends keyof State>(key: Key) {
+  private createPlaceState<Key extends keyof State>(key: Key) {
     return (next: State[Key]): void => {
-      return this.setState(key, next);
+      return this.placeState(key, next);
     };
   }
 
@@ -279,11 +310,11 @@ export default class Store<State> {
     // eslint-disable-next-line react-hooks/rules-of-hooks
     const state = useStoreState(this, key, memoized);
 
-    if (state) {
+    if (state === null || state === undefined) {
+      throw new Error(`${key}'s state should be here`);
+    } else {
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       return state!;
-    } else {
-      throw new Error(`${key}'s state should be here`);
     }
   }
 
@@ -294,19 +325,18 @@ export default class Store<State> {
   }
 
   /**
-   * getHelpers gives you setState & getState & useStore scoped to a particular store.
+   * getScopedFns gives you useStoreState, useNonNullState, getState, getNonNullState, forceUpdate,
+   *   setState, setPartialState, setStateIfDifferent & placeState scoped to a particular store.
    *
-   * https://github.com/kmurph73/set-state-is-great#gethelpers
+   *
+   * https://github.com/kmurph73/set-state-is-great#getscopedfns
    *
    * @example
    *
-   * // getState() returns drawer's state
-   * // useStore is scoped to `drawer` and will observe changes to `open`
-   * // setState sets drawer's state
-   * const {getState, setState, useStore} = store.getHelpers('drawer', ['open'])
+   * const {getState, setState, useStoreState} = store.getScopedFns('drawer')
    *
    * function Drawer() {
-   *   const {open} = useStore();
+   *   const {open} = useStoreState();
    *
    *   return (
    *     <MuiDrawer open={open}>
@@ -316,15 +346,17 @@ export default class Store<State> {
    * }
    */
   // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
-  getHelpers<Key extends keyof State>(key: Key, memoized = false) {
+  getScopedFns<Key extends keyof State>(key: Key, memoized = false) {
     return {
       useStoreState: this.createUseStoreState(key, memoized),
       useNonNullState: this.createUseNonNullState(key, memoized),
       getState: this.createGetState(key),
       getNonNullState: this.createGetNonNullState(key),
       setState: this.createSetState(key),
+      placeState: this.createPlaceState(key),
       forceUpdate: this.createForceUpdate(key),
       setPartialState: this.createSetPartialState(key),
+      setPartialStateIfDifferent: this.createSetPartialStateIfDifferent(key),
     };
   }
 }
