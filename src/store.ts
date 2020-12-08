@@ -12,7 +12,7 @@ type StoreObj = { id: number; memoized: boolean; forceUpdate: ForceUpdateIfMount
 
 const findStoreObj = (objects: StoreObj[], id: number): StoreObj | undefined => {
   for (let index = 0; index < objects.length; index++) {
-    const obj = objects[index];
+    const obj = objects[index]!;
 
     if (obj.id === id) {
       return obj;
@@ -52,7 +52,7 @@ export default class Store<State> {
 
     if (objects) {
       for (let index = 0; index < objects.length; index++) {
-        objects[index].forceUpdate();
+        objects[index]!.forceUpdate();
       }
     }
   }
@@ -76,7 +76,7 @@ export default class Store<State> {
     /* eslint-disable-next-line @typescript-eslint/no-unused-vars */
     for (const [key, objects] of this.objStore) {
       for (let index = 0; index < objects.length; index++) {
-        const obj = objects[index];
+        const obj = objects[index]!;
 
         if (obj.memoized) {
           obj.forceUpdate();
@@ -269,7 +269,7 @@ export default class Store<State> {
 
     if (arr) {
       for (let index = 0; index < arr.length; index++) {
-        const obj = arr[index];
+        const obj = arr[index]!;
 
         if (obj.id === id) {
           arr.splice(index, 1);
