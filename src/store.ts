@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-non-null-assertion */
 import { ForceUpdateIfMounted } from './types';
 import useStoreState from './useStoreState';
 
