@@ -235,7 +235,6 @@ export default class Store<State> {
     if (state === undefined || state === null) {
       throw new Error(`${key}'s state should be here`);
     } else {
-      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       return state!;
     }
   }
@@ -314,7 +313,6 @@ export default class Store<State> {
     if (state === null || state === undefined) {
       throw new Error(`${key}'s state should be here`);
     } else {
-      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       return state!;
     }
   }
@@ -347,6 +345,7 @@ export default class Store<State> {
    * }
    */
   // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
+  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
   getScopedFns<Key extends keyof State>(key: Key, memoized = false) {
     return {
       useStoreState: this.createUseStoreState(key, memoized),

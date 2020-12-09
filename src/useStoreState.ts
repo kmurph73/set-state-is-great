@@ -20,7 +20,11 @@ import useComponentId from './useComponentId';
  *   )
  * }
  */
-const useStoreState = <AppState, Key extends keyof AppState>(store: Store<AppState>, key: Key, memoized = false) => {
+const useStoreState = <AppState, Key extends keyof AppState>(
+  store: Store<AppState>,
+  key: Key,
+  memoized = false,
+): AppState[Key] => {
   const id = useComponentId();
   store.subscribe(key, id, useForceUpdateIfMounted(), memoized);
 
