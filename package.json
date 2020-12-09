@@ -4,9 +4,9 @@
   "description": "Global store + setState + hooks integration",
   "license": "MIT",
   "types": "./src/index.ts",
-  "main": "./lib/index.js",
+  "main": "./dist/index.js",
   "files": [
-    "lib",
+    "dist",
     "src"
   ],
   "scripts": {
