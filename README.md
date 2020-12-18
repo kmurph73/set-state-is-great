@@ -74,16 +74,16 @@ If the value could be null or undefined, but you expect it not to be, `useNonNul
 
 If using TypeScript, the returning value will be [non-nullified](https://www.typescriptlang.org/docs/handbook/utility-types.html#nonnullabletype)
 
-## getScopedFns
+## getScopedHelpers
 
-`getScopedFns` gives you the following functions scoped to a particular key:
+`getScopedHelpers` gives you the following functions scoped to a particular key:
 
 `useStoreState`, `useNonNullState`, `getState`, `getNonNullState`, `forceUpdate`, `setState`, `setPartialState`, `setStateIfDifferent`, `placeState`
 
 ```javascript
 import { store } from './constants';
 
-const { setPartialState, useNonNullState: useDrawerState } = store.getScopedFns('drawer');
+const { setPartialState, useNonNullState: useDrawerState } = store.getScopedHelpers('drawer');
 
 const close = () => {
   setPartialState({open: false})

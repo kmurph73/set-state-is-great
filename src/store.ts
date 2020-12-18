@@ -324,7 +324,7 @@ export default class Store<State> {
   }
 
   /**
-   * getScopedFns gives you useStoreState, useNonNullState, getState, getNonNullState, forceUpdate,
+   * getScopedHelpers gives you useStoreState, useNonNullState, getState, getNonNullState, forceUpdate,
    *   setState, setPartialState, setStateIfDifferent & placeState scoped to a particular store.
    *
    *
@@ -332,7 +332,7 @@ export default class Store<State> {
    *
    * @example
    *
-   * const {getState, setState, useStoreState} = store.getScopedFns('drawer')
+   * const {getState, setState, useStoreState} = store.getScopedHelpers('drawer')
    *
    * function Drawer() {
    *   const {open} = useStoreState();
@@ -346,7 +346,7 @@ export default class Store<State> {
    */
   // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
   // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
-  getScopedFns<Key extends keyof State>(key: Key, memoized = false) {
+  getScopedHelpers<Key extends keyof State>(key: Key, memoized = false) {
     return {
       useStoreState: this.createUseStoreState(key, memoized),
       useNonNullState: this.createUseNonNullState(key, memoized),
