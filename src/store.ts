@@ -40,6 +40,14 @@ export default class Store<State> {
   }
 
   /**
+   * Replace the central state obj wholesale
+   * https://github.com/kmurph73/set-state-is-great#comingsoon
+   */
+  replaceStateObj(state: State): void {
+    this.state = state;
+  }
+
+  /**
    * force update all components watching a particular store
    *
    * https://github.com/kmurph73/set-state-is-great#force-updating-components
