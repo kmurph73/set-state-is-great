@@ -1,14 +1,17 @@
 # Set State is Great
+
 <p align='center'>A global store + setState + hooks integration.</p>
 
-Global state management without the ceremony.  No Context, Redux, actions, thunks, selectors, or anything that ends in "ducer."  Zero dependency (other than React of course).  Written in & optimized for TypeScript.
+Global state management without the ceremony. No Context, Redux, actions, thunks, selectors, or anything that ends in "ducer." Zero dependency (other than React of course). Written in & optimized for TypeScript.
 
 ## Installing
 
 ```
 npm install set-state-is-great
 ```
+
 or
+
 ```
 yarn add set-state-is-great
 ```
@@ -23,7 +26,7 @@ import { Store } from 'set-state-is-great';
 const appState = {
   viewShown: 'Home',
   colormode: 'dark',
-  drawer: {open: false, other: '?'},
+  drawer: { open: false, other: '?' },
 };
 
 const store = new Store(appState);
@@ -34,6 +37,7 @@ const store = new Store(appState);
 For mutating a store's data, there's `setState` & `setPartialState`:
 
 `setState` _replaces_ the state for a key:
+
 ```javascript
 store.setState('drawer', { open: true, other: 'yup' });
 ```
@@ -49,7 +53,7 @@ store.setPartialState('drawer', { open: true });
 Watch for changes to a particular key using `store.useState`
 
 ```javascript
-import {store} from './constants';
+import { store } from './constants';
 
 function Drawer() {
   const { open } = store.useState('drawer');
@@ -58,7 +62,7 @@ function Drawer() {
     <MuiDrawer open={open}>
       <div>just drawer things</div>
     </MuiDrawer>
-  )
+  );
 }
 
 export default Drawer;
@@ -69,7 +73,7 @@ export default Drawer;
 If the value could be null or undefined, but you expect it not to be, `useNonNullState` will throw an error if the value is null or undefined.
 
 ```javascript
-  const { open } = store.useNonNullState('drawer')
+const { open } = store.useNonNullState('drawer');
 ```
 
 If using TypeScript, the returning value will be [non-nullified](https://www.typescriptlang.org/docs/handbook/utility-types.html#nonnullabletype)
@@ -78,7 +82,7 @@ If using TypeScript, the returning value will be [non-nullified](https://www.typ
 
 `getScopedHelpers` gives you the following functions scoped to a particular key:
 
-`useStoreState`, `useNonNullState`, `getState`, `getNonNullState`, `forceUpdate`, `setState`, `setPartialState`, `setStateIfDifferent`, `placeState`
+`useStoreState`, `useNonNullState`, `getState`, `getNonNullState`, `forceUpdate`, `setState`, `setPartialState`, `setStateIfDifferent`
 
 ```javascript
 import { store } from './constants';
@@ -86,7 +90,7 @@ import { store } from './constants';
 const { setPartialState, useNonNullState: useDrawerState } = store.getScopedHelpers('drawer');
 
 const close = () => {
-  setPartialState({open: false})
+  setPartialState({ open: false });
 };
 
 function Drawer() {
@@ -96,7 +100,7 @@ function Drawer() {
     <MuiDrawer open={open}>
       <div onClick={close}>close drawer</div>
     </MuiDrawer>
-  )
+  );
 }
 
 export default Drawer;
@@ -111,30 +115,33 @@ store.getState('drawer');
 store.getNonNullState('drawer');
 ```
 
-## placeState & setStateIfDifferent
+## setStateIfDifferent
 
-`placeState` & `placePartialState` will set & assign values, and NOT rerender any components
+`setStateIfDifferent` will only rerender watching components if the value differs. EG:
 
-`setStateIfDifferent` will only rerender watching components if the value differs.  EG:
-
-``` TypeScript
+```TypeScript
 store.setStateIfDifferent('breakpoint', 'sm');`
 ```
 
-## getStateObj
+## the central state obj
 
-Get the full state object.
+SSiG gives you direct access to the central state obj:
 
 ```javascript
-const data = store.getStateObj();
-data.drawer // {open: true, other: 'yup'} 
+store.state; // {open: true, other: 'yup'}
+```
+
+Feel free to mutate, or replace it, it as you please, eg:
+
+```javascript
+store.state = { colormode: 'dark' };
 ```
 
 ## Organizing the store (and some TypeScript)
 
-I recommend creating something like a `constants.ts` file with a `store` variable and function to set it: 
+I recommend creating something like a `constants.ts` file with a `store` variable and function to set it:
 
-``` TypeScript
+```TypeScript
 // constants.ts
 import { Store } from "set-state-is-great";
 import { AppState } from "./types";
@@ -149,7 +156,7 @@ export const setStore = (theStore: Store<AppState>) => {
 
 Then you can set it when creating your store:
 
-``` TypeScript
+```TypeScript
 // store.ts
 import { Store } from 'set-state-is-great';
 import { AppState } from './types';
@@ -169,11 +176,11 @@ Then you can import the store from any file: `import { store } from './constants
 
 ## TypeScript
 
-SSiG is written in & optimized for TS, and it's highly recommended that you use it with TS.  
+SSiG is written in & optimized for TS, and it's highly recommended that you use it with TS.
 
 To do so, define your store's state like so:
 
-``` TypeScript
+```TypeScript
 type DrawerState = {
   open: boolean;
   other: string;
@@ -201,15 +208,15 @@ Now `setState` et al. will check that you're passing in the correct types.
 
 ## Force updating components
 
-``` TypeScript
+```TypeScript
 // forceUpdate all components watching a particular key
 store.forceUpdate('drawer');
 ```
 
 ## Todo
 
-* Tests
-* chill
+- Tests
+- chill
 
 ## License
 
