@@ -114,7 +114,7 @@ It's not frozen, feel free to mutate it as you see fit.
 
 ```javascript
 store.state.drawer; // => {open: true, other: 'yup'}
-store.state.drawer = false;
+store.state.drawer.open = false;
 store.forceUpdate('drawer');
 
 ```
