@@ -116,6 +116,16 @@ It's not frozen, feel free to mutate it as you see fit.
 store.state.drawer; // => {open: true, other: 'yup'}
 ```
 
+Or just replace it wholesale:
+
+```javascript
+store.state = {
+  viewShown: 'Home',
+  colormode: 'light',
+  drawer: { open: false, other: '?' },
+};
+```
+
 ## getState
 
 You can also access a store's state via `getState(key)` & `getNonNullState(key)`:
