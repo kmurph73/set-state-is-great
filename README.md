@@ -114,6 +114,9 @@ It's not frozen, feel free to mutate it as you see fit.
 
 ```javascript
 store.state.drawer; // => {open: true, other: 'yup'}
+store.state.drawer = false;
+store.forceUpdate('drawer');
+
 ```
 
 Or just replace it wholesale:
@@ -126,14 +129,11 @@ store.state = {
 };
 ```
 
-## getState
+## Force updating components
 
-You can also access a store's state via `getState(key)` & `getNonNullState(key)`:
-
-```javascript
-store.getState('drawer');
-store.state.drawer; // or just do this
-store.getNonNullState('drawer');
+```TypeScript
+// forceUpdate all components watching a particular key
+store.forceUpdate('drawer');
 ```
 
 ## setStateIfDifferent
@@ -142,6 +142,16 @@ store.getNonNullState('drawer');
 
 ```TypeScript
 store.setStateIfDifferent('breakpoint', 'sm');`
+```
+
+## getState
+
+You can also access a store's state via `getState(key)` & `getNonNullState(key)`:
+
+```javascript
+store.getState('drawer');
+store.state.drawer; // or just do this
+store.getNonNullState('drawer');
 ```
 
 ## Organizing the store (and some TypeScript)
@@ -213,12 +223,7 @@ const store = new Store<AppState>({ colormode: "dark" });
 
 Now `setState` et al. will check that you're passing in the correct types.
 
-## Force updating components
 
-```TypeScript
-// forceUpdate all components watching a particular key
-store.forceUpdate('drawer');
-```
 
 ## Todo
 
