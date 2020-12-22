@@ -22,21 +22,13 @@ const findStoreObj = (objects: StoreObj[], id: number): StoreObj | undefined => 
 };
 
 export default class Store<State> {
-  private state: State;
+  state: State;
 
   private objStore: Map<keyof State, StoreObj[]>;
 
   constructor(state: State) {
     this.state = state;
     this.objStore = new Map();
-  }
-
-  /**
-   * Get the central state object that holds all of the stores.
-   * https://github.com/kmurph73/set-state-is-great#getfull
-   */
-  getStateObj(): State {
-    return this.state;
   }
 
   /**
@@ -245,25 +237,6 @@ export default class Store<State> {
     };
   }
 
-  /**
-   * set a value for a key, dont rerender any watching stores
-   *
-   * https://github.com/kmurph73/set-state-is-great#placestate
-   *
-   * @example
-   *  store.placeState('viewShown', 'Home');
-   *
-   */
-  placeState<Key extends keyof State>(key: Key, nextState: State[Key]): void {
-    this.state[key] = nextState;
-  }
-
-  private createPlaceState<Key extends keyof State>(key: Key) {
-    return (next: State[Key]): void => {
-      return this.placeState(key, next);
-    };
-  }
-
   unsubscribe<Key extends keyof State>(key: Key, id: number): void {
     const arr = this.objStore.get(key);
 
@@ -353,7 +326,6 @@ export default class Store<State> {
       getState: this.createGetState(key),
       getNonNullState: this.createGetNonNullState(key),
       setState: this.createSetState(key),
-      placeState: this.createPlaceState(key),
       forceUpdate: this.createForceUpdate(key),
       setPartialState: this.createSetPartialState(key),
       setPartialStateIfDifferent: this.createSetPartialStateIfDifferent(key),
