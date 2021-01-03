@@ -298,7 +298,7 @@ export default class Store<State> {
 
   /**
    * getScopedHelpers gives you useStoreState, useNonNullState, getState, getNonNullState, forceUpdate,
-   *   setState, setPartialState, setStateIfDifferent & placeState scoped to a particular store.
+   *   setState, setPartialState & setStateIfDifferent scoped to a particular store.
    *
    *
    * https://github.com/kmurph73/set-state-is-great#getscopedfns

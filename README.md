@@ -110,13 +110,12 @@ export default Drawer;
 
 Access the central state obj via `store.state`.
 
-It's not frozen, feel free to mutate it as you see fit.
+Feel free to mutate it as you see fit.
 
 ```javascript
 store.state.drawer; // => {open: true, other: 'yup'}
 store.state.drawer.open = false;
 store.forceUpdate('drawer');
-
 ```
 
 Or just replace it wholesale:
@@ -222,8 +221,6 @@ const store = new Store<AppState>({ colormode: "dark" });
 ```
 
 Now `setState` et al. will check that you're passing in the correct types.
-
-
 
 ## Todo
 
