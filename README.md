@@ -4,8 +4,6 @@
 
 Global state management without the ceremony. No Context, Redux, actions, thunks, selectors, or anything that ends in "ducer." Zero dependency (other than React of course). Written in & optimized for TypeScript.
 
-[Strict Mode](https://reactjs.org/docs/strict-mode.html) Quirk (dev only): [useComponentId](https://gist.github.com/sqren/fc897c1629979e669714893df966b1b7#gistcomment-3591823), which this lib uses, produces two differing values (due to Strict Mode double rendering each component).  This may cause React to falsely warn of a memory leak, again in dev only.
-
 ## Installing
 
 ```
@@ -223,6 +221,10 @@ const store = new Store<AppState>({ colormode: "dark" });
 ```
 
 Now `setState` et al. will check that you're passing in the correct types.
+
+## [Strict Mode](https://reactjs.org/docs/strict-mode.html) Quirk
+
+Only in Strict Mode, in dev environment.  This lib relies on [useComponentId](https://gist.github.com/sqren/fc897c1629979e669714893df966b1b7#gistcomment-3591823), which in Strict Mode, produces a differing value on SM's double render.  This may cause React to falsely warn of a memory leak, again in dev only.
 
 ## Todo
 
