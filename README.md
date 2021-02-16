@@ -2,7 +2,7 @@
 
 <p align='center'>A global store + setState + hooks integration.</p>
 
-Global state management without the ceremony. No Context, Redux, actions, thunks, selectors, or anything that ends in "ducer." Zero dependency (other than React of course). Written in & optimized for TypeScript.
+Global state management without the ceremony.  Zero dependency (other than React of course). No Context or reducers.  Written in & optimized for TypeScript.
 
 ## Installing
 
