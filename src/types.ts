@@ -5,7 +5,6 @@
 // HT: https://stackoverflow.com/a/44101728/548170
 export type ForceUpdateIfMounted = Partial<React.Dispatch<unknown>> & ((value?: unknown) => void);
 
-export type SubscribeProps = {
-  name: string;
+export type SubscribeOpts = {
   memoized?: boolean;
 };

@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
-import { ForceUpdateIfMounted, SubscribeProps } from './types';
+import { ForceUpdateIfMounted, SubscribeOpts } from './types';
 import useStoreState from './useStoreState';
 
 export type PlainObject = { [name: string]: unknown };
@@ -238,38 +238,47 @@ export default class Store<State> {
     }
   }
 
-  subscribe<Key extends keyof State>(key: Key, forceUpdate: ForceUpdateIfMounted, props: SubscribeProps): void {
+  subscribe<Key extends keyof State>(
+    key: Key,
+    componentName: string,
+    forceUpdate: ForceUpdateIfMounted,
+    opts: SubscribeOpts,
+  ): void {
     const componentStore = this.keyStore.get(key);
 
     if (componentStore) {
-      const componentObj = componentStore.get(props.name);
+      const componentObj = componentStore.get(componentName);
 
       if (componentObj) {
         componentObj.forceUpdate = forceUpdate;
       } else {
-        componentStore.set(props.name, { memoized: props.memoized || false, forceUpdate });
+        componentStore.set(componentName, { memoized: opts.memoized || false, forceUpdate });
       }
     } else {
       const componentMap = new Map();
-      componentMap.set(props.name, { memoized: props.memoized || false, forceUpdate });
+      componentMap.set(componentName, { memoized: opts.memoized || false, forceUpdate });
       this.keyStore.set(key, componentMap);
     }
   }
 
-  useState<Key extends keyof State>(key: Key, props: SubscribeProps): State[Key] {
+  useState<Key extends keyof State>(key: Key, componentName: string, opts: SubscribeOpts): State[Key] {
     // eslint-disable-next-line react-hooks/rules-of-hooks
-    return useStoreState(this, key, props);
+    return useStoreState(this, key, componentName, opts);
   }
 
   private createUseStoreState<Key extends keyof State>(key: Key, memoized: boolean) {
-    return ({ name }: { name: string }): State[Key] => {
-      return useStoreState(this, key, { name, memoized });
+    return (componentName: string): State[Key] => {
+      return useStoreState(this, key, componentName, { memoized });
     };
   }
 
-  useNonNullState<Key extends keyof State>(key: Key, { name, memoized }: SubscribeProps): NonNullable<State[Key]> {
+  useNonNullState<Key extends keyof State>(
+    key: Key,
+    componentName: string,
+    { memoized }: SubscribeOpts,
+  ): NonNullable<State[Key]> {
     // eslint-disable-next-line react-hooks/rules-of-hooks
-    const state = useStoreState(this, key, { name, memoized: memoized || false });
+    const state = useStoreState(this, key, componentName, { memoized: memoized || false });
 
     if (state === null || state === undefined) {
       throw new Error(`${key}'s state should be here`);
@@ -279,8 +288,8 @@ export default class Store<State> {
   }
 
   private createUseNonNullState<Key extends keyof State>(key: Key, memoized: boolean) {
-    return ({ name }: { name: string }): NonNullable<State[Key]> => {
-      return this.useNonNullState(key, { name, memoized });
+    return (componentName: string): NonNullable<State[Key]> => {
+      return this.useNonNullState(key, componentName, { memoized });
     };
   }
 

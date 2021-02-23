@@ -2,7 +2,7 @@
 import React from 'react';
 import Store from './store';
 import useForceUpdateIfMounted from './useForceUpdateIfMounted';
-import { SubscribeProps } from './types';
+import { SubscribeOpts } from './types';
 
 /**
  * access and observe changes to a store's state
@@ -23,15 +23,16 @@ import { SubscribeProps } from './types';
 const useStoreState = <AppState, Key extends keyof AppState>(
   store: Store<AppState>,
   key: Key,
-  props: SubscribeProps,
+  componentName: string,
+  opts: SubscribeOpts,
 ): AppState[Key] => {
-  store.subscribe(key, useForceUpdateIfMounted(), props);
+  store.subscribe(key, componentName, useForceUpdateIfMounted(), opts);
 
   React.useEffect(
     () => (): void => {
-      store.unsubscribe(key, props.name);
+      store.unsubscribe(key, componentName);
     },
-    [store, key, props.name],
+    [store, key, componentName],
   );
 
   return store.getState(key);
