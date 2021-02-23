@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
-import { ForceUpdateIfMounted } from './types';
+import { ForceUpdateIfMounted, SubscribeProps } from './types';
 import useStoreState from './useStoreState';
 
 export type PlainObject = { [name: string]: unknown };
@@ -9,26 +9,18 @@ function isPlainObject(obj: any): obj is PlainObject {
   return (obj && obj.constructor === Object) || false;
 }
 
-type StoreObj = { id: number; memoized: boolean; forceUpdate: ForceUpdateIfMounted };
-
-const findStoreObj = (objects: StoreObj[], id: number): StoreObj | undefined => {
-  for (let index = 0; index < objects.length; index++) {
-    const obj = objects[index]!;
-
-    if (obj.id === id) {
-      return obj;
-    }
-  }
-};
+// ComponentMap stores all of the currently subscribed components for a given key
+type ComponentMap = Map<string, { memoized: boolean; forceUpdate: ForceUpdateIfMounted }>;
 
 export default class Store<State> {
   state: State;
 
-  private objStore: Map<keyof State, StoreObj[]>;
+  // keyStore maps state keys to a map of
+  keyStore: Map<keyof State, ComponentMap>;
 
   constructor(state: State) {
     this.state = state;
-    this.objStore = new Map();
+    this.keyStore = new Map();
   }
 
   /**
@@ -41,11 +33,13 @@ export default class Store<State> {
    *
    */
   forceUpdate(key: keyof State): void {
-    const objects = this.objStore.get(key);
+    const objStore = this.keyStore.get(key);
 
-    if (objects) {
-      for (let index = 0; index < objects.length; index++) {
-        objects[index]!.forceUpdate();
+    if (objStore) {
+      for (const componentName in objStore) {
+        const obj = objStore.get(componentName);
+
+        obj?.forceUpdate();
       }
     }
   }
@@ -67,10 +61,9 @@ export default class Store<State> {
    */
   forceUpdateMemoized(): void {
     /* eslint-disable-next-line @typescript-eslint/no-unused-vars */
-    for (const [key, objects] of this.objStore) {
-      for (let index = 0; index < objects.length; index++) {
-        const obj = objects[index]!;
-
+    for (const [_key, objStore] of this.keyStore) {
+      /* eslint-disable-next-line @typescript-eslint/no-unused-vars */
+      for (const [_componentName, obj] of objStore) {
         if (obj.memoized) {
           obj.forceUpdate();
         }
@@ -237,51 +230,46 @@ export default class Store<State> {
     };
   }
 
-  unsubscribe<Key extends keyof State>(key: Key, id: number): void {
-    const arr = this.objStore.get(key);
+  unsubscribe<Key extends keyof State>(key: Key, componentName: string): void {
+    const obj = this.keyStore.get(key);
 
-    if (arr) {
-      for (let index = 0; index < arr.length; index++) {
-        const obj = arr[index]!;
-
-        if (obj.id === id) {
-          arr.splice(index, 1);
-          return;
-        }
-      }
+    if (obj) {
+      obj.delete(componentName);
     }
   }
 
-  subscribe<Key extends keyof State>(key: Key, id: number, forceUpdate: ForceUpdateIfMounted, memoized: boolean): void {
-    const arr = this.objStore.get(key);
+  subscribe<Key extends keyof State>(key: Key, forceUpdate: ForceUpdateIfMounted, props: SubscribeProps): void {
+    const componentStore = this.keyStore.get(key);
 
-    if (arr) {
-      const obj = findStoreObj(arr, id);
+    if (componentStore) {
+      const componentObj = componentStore.get(props.name);
 
-      if (obj) {
-        obj.forceUpdate = forceUpdate;
+      if (componentObj) {
+        componentObj.forceUpdate = forceUpdate;
       } else {
-        arr.push({ id, forceUpdate, memoized });
+        componentStore.set(props.name, { memoized: props.memoized || false, forceUpdate });
       }
     } else {
-      this.objStore.set(key, [{ id, forceUpdate, memoized }]);
+      const componentMap = new Map();
+      componentMap.set(props.name, { memoized: props.memoized || false, forceUpdate });
+      this.keyStore.set(key, componentMap);
     }
   }
 
-  useState<Key extends keyof State>(key: Key, memoized = false): State[Key] {
+  useState<Key extends keyof State>(key: Key, props: SubscribeProps): State[Key] {
     // eslint-disable-next-line react-hooks/rules-of-hooks
-    return useStoreState(this, key, memoized);
+    return useStoreState(this, key, props);
   }
 
-  private createUseStoreState<Key extends keyof State>(key: Key, memoized = false) {
-    return (): State[Key] => {
-      return useStoreState(this, key, memoized);
+  private createUseStoreState<Key extends keyof State>(key: Key, memoized: boolean) {
+    return ({ name }: { name: string }): State[Key] => {
+      return useStoreState(this, key, { name, memoized });
     };
   }
 
-  useNonNullState<Key extends keyof State>(key: Key, memoized = false): NonNullable<State[Key]> {
+  useNonNullState<Key extends keyof State>(key: Key, { name, memoized }: SubscribeProps): NonNullable<State[Key]> {
     // eslint-disable-next-line react-hooks/rules-of-hooks
-    const state = useStoreState(this, key, memoized);
+    const state = useStoreState(this, key, { name, memoized: memoized || false });
 
     if (state === null || state === undefined) {
       throw new Error(`${key}'s state should be here`);
@@ -290,9 +278,9 @@ export default class Store<State> {
     }
   }
 
-  private createUseNonNullState<Key extends keyof State>(key: Key, memoized = false) {
-    return (): NonNullable<State[Key]> => {
-      return this.useNonNullState(key, memoized);
+  private createUseNonNullState<Key extends keyof State>(key: Key, memoized: boolean) {
+    return ({ name }: { name: string }): NonNullable<State[Key]> => {
+      return this.useNonNullState(key, { name, memoized });
     };
   }
 
@@ -319,10 +307,10 @@ export default class Store<State> {
    */
   // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
   // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
-  getScopedHelpers<Key extends keyof State>(key: Key, memoized = false) {
+  getScopedHelpers<Key extends keyof State>(key: Key, { memoized }: { memoized?: boolean }) {
     return {
-      useStoreState: this.createUseStoreState(key, memoized),
-      useNonNullState: this.createUseNonNullState(key, memoized),
+      useStoreState: this.createUseStoreState(key, memoized || false),
+      useNonNullState: this.createUseNonNullState(key, memoized || false),
       getState: this.createGetState(key),
       getNonNullState: this.createGetNonNullState(key),
       setState: this.createSetState(key),
