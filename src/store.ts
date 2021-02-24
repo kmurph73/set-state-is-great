@@ -266,8 +266,8 @@ export default class Store<State> {
     return useStoreState(this, key, componentName, opts);
   }
 
-  private createUseStoreState<Key extends keyof State>(key: Key, memoized: boolean) {
-    return (componentName: string): State[Key] => {
+  private createUseStoreState<Key extends keyof State>(key: Key, componentName: string, memoized: boolean) {
+    return (): State[Key] => {
       return useStoreState(this, key, componentName, { memoized });
     };
   }
@@ -287,8 +287,8 @@ export default class Store<State> {
     }
   }
 
-  private createUseNonNullState<Key extends keyof State>(key: Key, memoized: boolean) {
-    return (componentName: string): NonNullable<State[Key]> => {
+  private createUseNonNullState<Key extends keyof State>(key: Key, componentName: string, memoized: boolean) {
+    return (): NonNullable<State[Key]> => {
       return this.useNonNullState(key, componentName, { memoized });
     };
   }
@@ -316,7 +316,7 @@ export default class Store<State> {
    */
   // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
   // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
-  getScopedHelpers<Key extends keyof State>(key: Key, componentName, { memoized }: { memoized?: boolean }) {
+  getScopedHelpers<Key extends keyof State>(key: Key, componentName: string, { memoized }: { memoized?: boolean }) {
     return {
       useStoreState: this.createUseStoreState(key, componentName, memoized || false),
       useNonNullState: this.createUseNonNullState(key, componentName, memoized || false),
