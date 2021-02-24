@@ -16,11 +16,11 @@ export default class Store<State> {
   state: State;
 
   // keyStore maps state keys to a map of
-  keyStore: Map<keyof State, ComponentMap>;
+  componentStore: Map<keyof State, ComponentMap>;
 
   constructor(state: State) {
     this.state = state;
-    this.keyStore = new Map();
+    this.componentStore = new Map();
   }
 
   /**
@@ -33,11 +33,11 @@ export default class Store<State> {
    *
    */
   forceUpdate(key: keyof State): void {
-    const objStore = this.keyStore.get(key);
+    const componentObj = this.componentStore.get(key);
 
-    if (objStore) {
+    if (componentObj) {
       /* eslint-disable-next-line @typescript-eslint/no-unused-vars */
-      for (const [_componentName, obj] of objStore) {
+      for (const [_componentName, obj] of componentObj) {
         obj.forceUpdate();
       }
     }
@@ -60,9 +60,9 @@ export default class Store<State> {
    */
   forceUpdateMemoized(): void {
     /* eslint-disable-next-line @typescript-eslint/no-unused-vars */
-    for (const [_key, objStore] of this.keyStore) {
+    for (const [_key, componentObj] of this.componentStore) {
       /* eslint-disable-next-line @typescript-eslint/no-unused-vars */
-      for (const [_componentName, obj] of objStore) {
+      for (const [_componentName, obj] of componentObj) {
         if (obj.memoized) {
           obj.forceUpdate();
         }
@@ -230,7 +230,7 @@ export default class Store<State> {
   }
 
   unsubscribe<Key extends keyof State>(key: Key, componentName: string): void {
-    const obj = this.keyStore.get(key);
+    const obj = this.componentStore.get(key);
 
     if (obj) {
       obj.delete(componentName);
@@ -243,7 +243,7 @@ export default class Store<State> {
     forceUpdate: ForceUpdateIfMounted,
     opts?: SubscribeOpts,
   ): void {
-    const componentStore = this.keyStore.get(key);
+    const componentStore = this.componentStore.get(key);
 
     if (componentStore) {
       const componentObj = componentStore.get(componentName);
@@ -256,7 +256,7 @@ export default class Store<State> {
     } else {
       const componentMap = new Map();
       componentMap.set(componentName, { memoized: opts?.memoized || false, forceUpdate });
-      this.keyStore.set(key, componentMap);
+      this.componentStore.set(key, componentMap);
     }
   }
 
