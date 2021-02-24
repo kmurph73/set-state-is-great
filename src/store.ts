@@ -36,10 +36,9 @@ export default class Store<State> {
     const objStore = this.keyStore.get(key);
 
     if (objStore) {
-      for (const componentName in objStore) {
-        const obj = objStore.get(componentName);
-
-        obj?.forceUpdate();
+      /* eslint-disable-next-line @typescript-eslint/no-unused-vars */
+      for (const [_componentName, obj] of objStore) {
+        obj.forceUpdate();
       }
     }
   }
