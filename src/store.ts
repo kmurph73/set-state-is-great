@@ -302,7 +302,7 @@ export default class Store<State> {
    *
    * @example
    *
-   * const {getState, setState, useStoreState} = store.getScopedHelpers('drawer')
+   * const {getState, setState, useStoreState} = store.getScopedHelpers('drawer', 'Drawer')
    *
    * function Drawer() {
    *   const {open} = useStoreState();
@@ -316,10 +316,10 @@ export default class Store<State> {
    */
   // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
   // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
-  getScopedHelpers<Key extends keyof State>(key: Key, { memoized }: { memoized?: boolean }) {
+  getScopedHelpers<Key extends keyof State>(key: Key, componentName, { memoized }: { memoized?: boolean }) {
     return {
-      useStoreState: this.createUseStoreState(key, memoized || false),
-      useNonNullState: this.createUseNonNullState(key, memoized || false),
+      useStoreState: this.createUseStoreState(key, componentName, memoized || false),
+      useNonNullState: this.createUseNonNullState(key, componentName, memoized || false),
       getState: this.createGetState(key),
       getNonNullState: this.createGetNonNullState(key),
       setState: this.createSetState(key),
