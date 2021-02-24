@@ -56,7 +56,7 @@ Watch for changes to a particular key using `store.useState`
 import { store } from './constants';
 
 function Drawer() {
-  const { open } = store.useState('drawer');
+  const { open } = store.useState('drawer', 'Drawer');
 
   return (
     <MuiDrawer open={open}>
@@ -67,6 +67,8 @@ function Drawer() {
 
 export default Drawer;
 ```
+
+[Why do I have to pass in the component name?](#why-do-I-have-to-pass-in-the-component-name)
 
 ## `store.useNonNullState`
 
@@ -221,6 +223,18 @@ const store = new Store<AppState>({ colormode: "dark" });
 ```
 
 Now `setState` et al. will check that you're passing in the correct types.
+
+## Why do I have to pass in the component name?
+
+`store.useState` requires that you pass in both the key to be watched, and the calling component, eg:
+
+`store.useState('drawer', 'Drawer')` if the current component is named Drawer.
+
+Previously, one didn't have to do this, since SSiG internally used [useComponentId](https://gist.github.com/sqren/fc897c1629979e669714893df966b1b7) to identify the component.  This works fine, but since `useComponentId` has a side effect (albeit harmless), it's [not so compatible with StrictMode](https://github.com/facebook/react/issues/20826).
+
+I considered providing both a `StrictStore` and `Store` class, in case one wasn't using `StrictMode`.  But I didn't want to maintain two classes, and don't want to discourage people from using `StrictMode`.
+
+Further, passing in the component name has the benefit of making the currently stored components more inspectable.  If you look at `store.componentStore`, you'll see a map of the state keys, and then a map of the current components and their `forceUpdate` functions.  This enables you to quickly see what components SSiG is currently watching.
 
 ## [Strict Mode](https://reactjs.org/docs/strict-mode.html) Quirk
 
