@@ -1,3 +1,3 @@
-import Store from './store';
+import StrictStore from './strictStore';
 
-export { Store };
+export { StrictStore };

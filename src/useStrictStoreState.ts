@@ -1,9 +1,8 @@
 /* eslint-disable @typescript-eslint/explicit-function-return-type */
 import React from 'react';
-import Store from './store';
 import useForceUpdateIfMounted from './useForceUpdateIfMounted';
-import useComponentId from './useComponentId';
 import { SubscribeOpts } from './types';
+import StrictStore from './strictStore';
 
 /**
  * access and observe changes to a store's state
@@ -21,22 +20,22 @@ import { SubscribeOpts } from './types';
  *   )
  * }
  */
-const useStoreState = <AppState, Key extends keyof AppState>(
-  store: Store<AppState>,
+const useStrictStoreState = <AppState, Key extends keyof AppState>(
+  store: StrictStore<AppState>,
   key: Key,
+  componentName: string,
   opts?: SubscribeOpts,
 ): AppState[Key] => {
-  const id = useComponentId();
-  store.subscribe(key, id, useForceUpdateIfMounted(), opts);
+  store.subscribe(key, componentName, useForceUpdateIfMounted(), opts);
 
   React.useEffect(
     () => (): void => {
-      store.unsubscribe(key, id);
+      store.unsubscribe(key, componentName);
     },
-    [store, key, id],
+    [store, key, componentName],
   );
 
   return store.getState(key);
 };
 
-export default useStoreState;
+export default useStrictStoreState;
