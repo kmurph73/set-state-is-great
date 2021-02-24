@@ -24,7 +24,7 @@ const useStoreState = <AppState, Key extends keyof AppState>(
   store: Store<AppState>,
   key: Key,
   componentName: string,
-  opts: SubscribeOpts,
+  opts?: SubscribeOpts,
 ): AppState[Key] => {
   store.subscribe(key, componentName, useForceUpdateIfMounted(), opts);
 

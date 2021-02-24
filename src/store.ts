@@ -242,7 +242,7 @@ export default class Store<State> {
     key: Key,
     componentName: string,
     forceUpdate: ForceUpdateIfMounted,
-    opts: SubscribeOpts,
+    opts?: SubscribeOpts,
   ): void {
     const componentStore = this.keyStore.get(key);
 
@@ -252,16 +252,16 @@ export default class Store<State> {
       if (componentObj) {
         componentObj.forceUpdate = forceUpdate;
       } else {
-        componentStore.set(componentName, { memoized: opts.memoized || false, forceUpdate });
+        componentStore.set(componentName, { memoized: opts?.memoized || false, forceUpdate });
       }
     } else {
       const componentMap = new Map();
-      componentMap.set(componentName, { memoized: opts.memoized || false, forceUpdate });
+      componentMap.set(componentName, { memoized: opts?.memoized || false, forceUpdate });
       this.keyStore.set(key, componentMap);
     }
   }
 
-  useState<Key extends keyof State>(key: Key, componentName: string, opts: SubscribeOpts): State[Key] {
+  useState<Key extends keyof State>(key: Key, componentName: string, opts?: SubscribeOpts): State[Key] {
     // eslint-disable-next-line react-hooks/rules-of-hooks
     return useStoreState(this, key, componentName, opts);
   }
@@ -275,10 +275,10 @@ export default class Store<State> {
   useNonNullState<Key extends keyof State>(
     key: Key,
     componentName: string,
-    { memoized }: SubscribeOpts,
+    opts?: SubscribeOpts,
   ): NonNullable<State[Key]> {
     // eslint-disable-next-line react-hooks/rules-of-hooks
-    const state = useStoreState(this, key, componentName, { memoized: memoized || false });
+    const state = useStoreState(this, key, componentName, { memoized: opts?.memoized || false });
 
     if (state === null || state === undefined) {
       throw new Error(`${key}'s state should be here`);
@@ -316,10 +316,10 @@ export default class Store<State> {
    */
   // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
   // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
-  getScopedHelpers<Key extends keyof State>(key: Key, componentName: string, { memoized }: { memoized?: boolean }) {
+  getScopedHelpers<Key extends keyof State>(key: Key, componentName: string, opts?: { memoized?: boolean }) {
     return {
-      useStoreState: this.createUseStoreState(key, componentName, memoized || false),
-      useNonNullState: this.createUseNonNullState(key, componentName, memoized || false),
+      useStoreState: this.createUseStoreState(key, componentName, opts?.memoized || false),
+      useNonNullState: this.createUseNonNullState(key, componentName, opts?.memoized || false),
       getState: this.createGetState(key),
       getNonNullState: this.createGetNonNullState(key),
       setState: this.createSetState(key),
