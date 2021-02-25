@@ -230,11 +230,13 @@ Now `setState` et al. will check that you're passing in the correct types.
 
 `store.useState('drawer', 'Drawer')` if the current component is named Drawer.
 
-Previously, one didn't have to do this, since SSiG internally used [useComponentId](https://gist.github.com/sqren/fc897c1629979e669714893df966b1b7) to identify the component.  This works fine, but since `useComponentId` has a side effect (albeit harmless), it's [not so compatible with StrictMode](https://github.com/facebook/react/issues/20826).
+Previously, one could simply do: `store.useState('drawer')`.
 
-I considered providing both a `StrictStore` and `Store` class, in case one wasn't using `StrictMode`.  But I didn't want to maintain two classes, and don't want to discourage people from using `StrictMode`.
+However, SSiG internally used [useComponentId](https://gist.github.com/sqren/fc897c1629979e669714893df966b1b7) to identify the component, which has side effects (albeit harmless), so [it wasn't compatible with StrictMode](https://github.com/facebook/react/issues/20826).
 
-Further, passing in the component name has the benefit of making the currently stored components more inspectable.  If you look at `store.componentStore`, you'll see a map of the state keys, and then a map of the current components and their `forceUpdate` functions.  This enables you to quickly see what components SSiG is currently watching.
+I considered providing both a `StrictStore` and `Store` class, in case one wasn't using `StrictMode`.  But I didn't want to maintain two nearly identical classes, and don't want to discourage people from using `StrictMode`.
+
+Further, passing in the component name has the benefit of making the currently stored components more inspectable.  If you look at `store.componentStore`, you'll see a map of the state keys, and then a map of the current components and their `forceUpdate` functions.  This enables you to quickly see what components SSiG is currently watching - which you probably don't care about, but at least it's more semantic than a number ID for each component.
 
 ## [Strict Mode](https://reactjs.org/docs/strict-mode.html) Quirk
 
