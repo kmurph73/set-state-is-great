@@ -210,7 +210,7 @@ export default class Store<State> {
    * https://github.com/kmurph73/set-state-is-great#getstate
    *
    * @example
-   *  store.getNonNullState('drawer');
+   *  store.getNonNullState('drawer', 'Drawer');
    *
    */
   getNonNullState<Key extends keyof State>(key: Key): NonNullable<State[Key]> {
