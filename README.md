@@ -75,7 +75,7 @@ export default Drawer;
 If the value could be null or undefined, but you expect it not to be, `useNonNullState` will throw an error if the value is null or undefined.
 
 ```javascript
-const { open } = store.useNonNullState('drawer');
+const { open } = store.useNonNullState('drawer', 'Drawer');
 ```
 
 If using TypeScript, the returning value will be [non-nullified](https://www.typescriptlang.org/docs/handbook/utility-types.html#nonnullabletype)
@@ -89,7 +89,8 @@ If using TypeScript, the returning value will be [non-nullified](https://www.typ
 ```javascript
 import { store } from './constants';
 
-const { setPartialState, useNonNullState: useDrawerState } = store.getScopedHelpers('drawer');
+const componentName = 'Drawer';
+const { setPartialState, useNonNullState: useDrawerState } = store.getScopedHelpers('drawer', componentName);
 
 const close = () => {
   setPartialState({ open: false });
@@ -226,7 +227,7 @@ Now `setState` et al. will check that you're passing in the correct types.
 
 ## Why do I have to pass in the component name?
 
-`store.useState` requires that you pass in both the key to be watched, and the calling component, eg:
+`store.useState` requires that you pass in both the key to be watched, and the name of calling component, eg:
 
 `store.useState('drawer', 'Drawer')` if the current component is named Drawer.
 
