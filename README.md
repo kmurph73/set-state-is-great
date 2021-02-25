@@ -238,10 +238,6 @@ I considered providing both a `StrictStore` and `Store` class, in case one wasn'
 
 Further, passing in the component name has the benefit of making the currently stored components more inspectable.  If you look at `store.componentStore`, you'll see a map of the state keys, and then a map of the current components and their `forceUpdate` functions.  This enables you to quickly see what components SSiG is currently watching - which you probably don't care about, but at least it's more semantic than a number ID for each component.
 
-## [Strict Mode](https://reactjs.org/docs/strict-mode.html) Quirk
-
-Only in Strict Mode, in dev environment.  This lib relies on [useComponentId](https://gist.github.com/sqren/fc897c1629979e669714893df966b1b7#gistcomment-3591823), which in Strict Mode, produces a differing value on SM's double render.  This may cause React to falsely warn of a memory leak, again in dev only.
-
 ## Todo
 
 - Tests
