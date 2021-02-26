@@ -12,7 +12,7 @@ import { SubscribeOpts } from './types';
  * @example
  *
  * function Drawer() {
- *   const {open} = useStoreState(store, 'drawer');
+ *   const {open} = useStoreState(store, 'drawer', 'Drawer');
  *   return (
  *     <MuiDrawer open={open}>
  *       <div>just drawer things</div>
