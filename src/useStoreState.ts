@@ -2,7 +2,7 @@
 import React from 'react';
 import Store from './store';
 import useForceUpdateIfMounted from './useForceUpdateIfMounted';
-import useComponentId from './useComponentId';
+import { SubscribeOpts } from './types';
 
 /**
  * access and observe changes to a store's state
@@ -12,7 +12,7 @@ import useComponentId from './useComponentId';
  * @example
  *
  * function Drawer() {
- *   const {open} = useStoreState(store, 'drawer');
+ *   const {open} = useStoreState(store, 'drawer', 'Drawer');
  *   return (
  *     <MuiDrawer open={open}>
  *       <div>just drawer things</div>
@@ -23,17 +23,18 @@ import useComponentId from './useComponentId';
 const useStoreState = <AppState, Key extends keyof AppState>(
   store: Store<AppState>,
   key: Key,
-  memoized = false,
+  componentName: string,
+  opts?: SubscribeOpts,
 ): AppState[Key] => {
-  const id = useComponentId();
-  store.subscribe(key, id, useForceUpdateIfMounted(), memoized);
+  const forceUpdate = useForceUpdateIfMounted();
 
-  React.useEffect(
-    () => (): void => {
-      store.unsubscribe(key, id);
-    },
-    [store, key, id],
-  );
+  React.useEffect(() => {
+    store.subscribe(key, componentName, forceUpdate, opts);
+
+    return (): void => {
+      store.unsubscribe(key, componentName);
+    };
+  }, [store, key, forceUpdate, componentName, opts]);
 
   return store.getState(key);
 };

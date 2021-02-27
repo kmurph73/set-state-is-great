@@ -1,6 +1,6 @@
 {
   "name": "set-state-is-great",
-  "version": "0.0.19",
+  "version": "0.0.20",
   "description": "Global store + setState + hooks integration",
   "license": "MIT",
   "types": "./src/index.ts",
@@ -11,8 +11,8 @@
   ],
   "scripts": {
     "prepare": "npm run build",
+    "build": "rimraf dist && tsc",
     "test": "echo \"Error: no test specified\" && exit 1",
-    "build": "tsc",
     "format": "prettier --write \"src/**/*.ts\" \"src/**/*.js\"",
     "lint": "eslint src/**/*.ts"
   },
@@ -42,6 +42,7 @@
     "eslint-plugin-react-hooks": "^4.2.0",
     "prettier": "^2.2.1",
     "react-dom": "^17.0.1",
-    "typescript": "^4.1.2"
+    "rimraf": "^3.0.2",
+    "typescript": "^4.1.3"
   }
 }
