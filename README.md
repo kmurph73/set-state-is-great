@@ -233,7 +233,7 @@ Now `setState` et al. will check that you're passing in the correct types.
 
 Previously, one could simply do: `store.useState('drawer')`.
 
-However, SSiG internally used [useComponentId](https://gist.github.com/sqren/fc897c1629979e669714893df966b1b7) to identify the component, which has side effects (albeit harmless), so [it wasn't compatible with StrictMode](https://github.com/facebook/react/issues/20826).
+However, SSiG internally used [useComponentId](https://gist.github.com/sqren/fc897c1629979e669714893df966b1b7) to identify the component, which has side effects, so [it wasn't compatible with StrictMode](https://github.com/facebook/react/issues/20826).
 
 I considered providing both a `StrictStore` and `Store` class, in case one wasn't using `StrictMode`. But I didn't want to maintain two nearly identical classes, and don't want to discourage people from using `StrictMode`.
 
