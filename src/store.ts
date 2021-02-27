@@ -291,6 +291,28 @@ export default class Store<State> {
     };
   }
 
+  private showHookedComponents(): { [key: string]: string[] } {
+    const store: { [key: string]: string[] } = {};
+
+    for (const [key, objMap] of this.componentStore) {
+      const arr: string[] = [];
+
+      for (const [component, obj] of objMap) {
+        if (obj.memoized) {
+          arr.push(component + ' (memoized)');
+        } else {
+          arr.push(component);
+        }
+      }
+
+      if (arr.length) {
+        store[key as string] = arr;
+      }
+    }
+
+    return store;
+  }
+
   /**
    * getScopedHelpers gives you useStoreState, useNonNullState, getState, getNonNullState, forceUpdate,
    *   setState, setPartialState & setStateIfDifferent scoped to a particular store.
