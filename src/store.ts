@@ -15,8 +15,7 @@ type ComponentMap = Map<string, { memoized: boolean; forceUpdate: ForceUpdateIfM
 export default class Store<State> {
   state: State;
 
-  // keyStore maps state keys to a map of
-  componentStore: Map<keyof State, ComponentMap>;
+  private componentStore: Map<keyof State, ComponentMap>;
 
   constructor(state: State) {
     this.state = state;

@@ -26,14 +26,15 @@ const useStoreState = <AppState, Key extends keyof AppState>(
   componentName: string,
   opts?: SubscribeOpts,
 ): AppState[Key] => {
-  store.subscribe(key, componentName, useForceUpdateIfMounted(), opts);
+  const forceUpdate = useForceUpdateIfMounted();
 
-  React.useEffect(
-    () => (): void => {
+  React.useEffect(() => {
+    store.subscribe(key, componentName, forceUpdate, opts);
+
+    return (): void => {
       store.unsubscribe(key, componentName);
-    },
-    [store, key, componentName],
-  );
+    };
+  }, [store, key, forceUpdate, componentName, opts]);
 
   return store.getState(key);
 };
