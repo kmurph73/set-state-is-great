@@ -15,7 +15,7 @@ const getUniqueId = () => uniqueId++;
  * @example
  *
  * function Drawer() {
- *   const {open} = useStoreState(store, 'drawer', 'Drawer');
+ *   const {open} = useStoreState(store, 'drawer');
  *   return (
  *     <MuiDrawer open={open}>
  *       <div>just drawer things</div>

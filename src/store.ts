@@ -296,7 +296,7 @@ export default class Store<State> {
    *
    * @example
    *
-   * const {getState, setState, useStoreState} = store.getScopedHelpers('drawer', 'Drawer')
+   * const {getState, setState, useStoreState} = store.getScopedHelpers('drawer')
    *
    * function Drawer() {
    *   const {open} = useStoreState();
