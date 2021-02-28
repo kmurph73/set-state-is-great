@@ -10,7 +10,7 @@ function isPlainObject(obj: any): obj is PlainObject {
 }
 
 // ComponentMap stores all of the currently subscribed components for a given key
-type ComponentMap = Map<string, { memoized: boolean; forceUpdate: ForceUpdateIfMounted }>;
+type ComponentMap = Map<number, { memoized: boolean; forceUpdate: ForceUpdateIfMounted }>;
 
 export default class Store<State> {
   state: State;
@@ -36,7 +36,7 @@ export default class Store<State> {
 
     if (componentObj) {
       /* eslint-disable-next-line @typescript-eslint/no-unused-vars */
-      for (const [_componentName, obj] of componentObj) {
+      for (const [_id, obj] of componentObj) {
         obj.forceUpdate();
       }
     }
@@ -61,7 +61,7 @@ export default class Store<State> {
     /* eslint-disable-next-line @typescript-eslint/no-unused-vars */
     for (const [_key, componentObj] of this.componentStore) {
       /* eslint-disable-next-line @typescript-eslint/no-unused-vars */
-      for (const [_componentName, obj] of componentObj) {
+      for (const [_id, obj] of componentObj) {
         if (obj.memoized) {
           obj.forceUpdate();
         }
@@ -228,55 +228,51 @@ export default class Store<State> {
     };
   }
 
-  unsubscribe<Key extends keyof State>(key: Key, componentName: string): void {
+  unsubscribe<Key extends keyof State>(key: Key, id: number): void {
     const obj = this.componentStore.get(key);
 
     if (obj) {
-      obj.delete(componentName);
+      obj.delete(id);
     }
   }
 
   subscribe<Key extends keyof State>(
     key: Key,
-    componentName: string,
+    id: number,
     forceUpdate: ForceUpdateIfMounted,
     opts?: SubscribeOpts,
   ): void {
     const componentStore = this.componentStore.get(key);
 
     if (componentStore) {
-      const componentObj = componentStore.get(componentName);
+      const componentObj = componentStore.get(id);
 
       if (componentObj) {
         componentObj.forceUpdate = forceUpdate;
       } else {
-        componentStore.set(componentName, { memoized: opts?.memoized || false, forceUpdate });
+        componentStore.set(id, { memoized: opts?.memoized || false, forceUpdate });
       }
     } else {
       const componentMap = new Map();
-      componentMap.set(componentName, { memoized: opts?.memoized || false, forceUpdate });
+      componentMap.set(id, { memoized: opts?.memoized || false, forceUpdate });
       this.componentStore.set(key, componentMap);
     }
   }
 
-  useState<Key extends keyof State>(key: Key, componentName: string, opts?: SubscribeOpts): State[Key] {
+  useState<Key extends keyof State>(key: Key, opts?: SubscribeOpts): State[Key] {
     // eslint-disable-next-line react-hooks/rules-of-hooks
-    return useStoreState(this, key, componentName, opts);
+    return useStoreState(this, key, opts);
   }
 
-  private createUseStoreState<Key extends keyof State>(key: Key, componentName: string, memoized: boolean) {
+  private createUseStoreState<Key extends keyof State>(key: Key, memoized: boolean) {
     return (): State[Key] => {
-      return useStoreState(this, key, componentName, { memoized });
+      return useStoreState(this, key, { memoized });
     };
   }
 
-  useNonNullState<Key extends keyof State>(
-    key: Key,
-    componentName: string,
-    opts?: SubscribeOpts,
-  ): NonNullable<State[Key]> {
+  useNonNullState<Key extends keyof State>(key: Key, opts?: SubscribeOpts): NonNullable<State[Key]> {
     // eslint-disable-next-line react-hooks/rules-of-hooks
-    const state = useStoreState(this, key, componentName, { memoized: opts?.memoized || false });
+    const state = useStoreState(this, key, { memoized: opts?.memoized || false });
 
     if (state === null || state === undefined) {
       throw new Error(`${key}'s state should be here`);
@@ -285,32 +281,10 @@ export default class Store<State> {
     }
   }
 
-  private createUseNonNullState<Key extends keyof State>(key: Key, componentName: string, memoized: boolean) {
+  private createUseNonNullState<Key extends keyof State>(key: Key, memoized: boolean) {
     return (): NonNullable<State[Key]> => {
-      return this.useNonNullState(key, componentName, { memoized });
+      return this.useNonNullState(key, { memoized });
     };
-  }
-
-  private showHookedComponents(): { [key: string]: string[] } {
-    const store: { [key: string]: string[] } = {};
-
-    for (const [key, objMap] of this.componentStore) {
-      const arr: string[] = [];
-
-      for (const [component, obj] of objMap) {
-        if (obj.memoized) {
-          arr.push(component + ' (memoized)');
-        } else {
-          arr.push(component);
-        }
-      }
-
-      if (arr.length) {
-        store[key as string] = arr;
-      }
-    }
-
-    return store;
   }
 
   /**
@@ -336,10 +310,10 @@ export default class Store<State> {
    */
   // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
   // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
-  getScopedHelpers<Key extends keyof State>(key: Key, componentName: string, opts?: { memoized?: boolean }) {
+  getScopedHelpers<Key extends keyof State>(key: Key, opts?: { memoized?: boolean }) {
     return {
-      useStoreState: this.createUseStoreState(key, componentName, opts?.memoized || false),
-      useNonNullState: this.createUseNonNullState(key, componentName, opts?.memoized || false),
+      useStoreState: this.createUseStoreState(key, opts?.memoized || false),
+      useNonNullState: this.createUseNonNullState(key, opts?.memoized || false),
       getState: this.createGetState(key),
       getNonNullState: this.createGetNonNullState(key),
       setState: this.createSetState(key),
