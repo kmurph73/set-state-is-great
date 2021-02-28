@@ -56,7 +56,7 @@ Watch for changes to a particular key using `store.useState`
 import { store } from './constants';
 
 function Drawer() {
-  const { open } = store.useState('drawer', 'Drawer');
+  const { open } = store.useState('drawer');
 
   return (
     <MuiDrawer open={open}>
@@ -68,14 +68,12 @@ function Drawer() {
 export default Drawer;
 ```
 
-[Why do I have to pass in the component name?](#why-do-I-have-to-pass-in-the-component-name)
-
 ## `store.useNonNullState`
 
 If the value could be null or undefined, but you expect it not to be, `useNonNullState` will throw an error if the value is null or undefined.
 
 ```javascript
-const { open } = store.useNonNullState('drawer', 'Drawer');
+const { open } = store.useNonNullState('drawer');
 ```
 
 If using TypeScript, the returning value will be [non-nullified](https://www.typescriptlang.org/docs/handbook/utility-types.html#nonnullabletype)
@@ -89,8 +87,7 @@ If using TypeScript, the returning value will be [non-nullified](https://www.typ
 ```javascript
 import { store } from './constants';
 
-const componentName = 'Drawer';
-const { setPartialState, useNonNullState: useDrawerState } = store.getScopedHelpers('drawer', componentName);
+const { setPartialState, useNonNullState: useDrawerState } = store.getScopedHelpers('drawer');
 
 const close = () => {
   setPartialState({ open: false });
@@ -224,20 +221,6 @@ const store = new Store<AppState>({ colormode: "dark" });
 ```
 
 Now `setState` et al. will check that you're passing in the correct types.
-
-## Why do I have to pass in the component name?
-
-`store.useState` requires that you pass in both the key to be watched, and the name of calling component, eg:
-
-`store.useState('drawer', 'Drawer')` if the current component is named Drawer.
-
-Previously, one could simply do: `store.useState('drawer')`.
-
-However, SSiG internally used [useComponentId](https://gist.github.com/sqren/fc897c1629979e669714893df966b1b7) to identify the component, which has side effects, so [it wasn't compatible with StrictMode](https://github.com/facebook/react/issues/20826).
-
-I considered providing both a `StrictStore` and `Store` class, in case one wasn't using `StrictMode`. But I didn't want to maintain two nearly identical classes, and don't want to discourage people from using `StrictMode`.
-
-Further, passing in the component name has the benefit of making the currently stored components more inspectable. If you look at `store.componentStore`, you'll see a map of the state keys, and then a map of the current components and their `forceUpdate` functions. This enables you to quickly see what components SSiG is currently watching - which you probably don't care about, but at least it's more semantic than a number ID for each component.
 
 ## Todo
 

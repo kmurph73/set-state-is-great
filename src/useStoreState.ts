@@ -4,6 +4,9 @@ import Store from './store';
 import useForceUpdateIfMounted from './useForceUpdateIfMounted';
 import { SubscribeOpts } from './types';
 
+let uniqueId = 1;
+const getUniqueId = () => uniqueId++;
+
 /**
  * access and observe changes to a store's state
  *
@@ -12,7 +15,7 @@ import { SubscribeOpts } from './types';
  * @example
  *
  * function Drawer() {
- *   const {open} = useStoreState(store, 'drawer', 'Drawer');
+ *   const {open} = useStoreState(store, 'drawer');
  *   return (
  *     <MuiDrawer open={open}>
  *       <div>just drawer things</div>
@@ -23,18 +26,21 @@ import { SubscribeOpts } from './types';
 const useStoreState = <AppState, Key extends keyof AppState>(
   store: Store<AppState>,
   key: Key,
-  componentName: string,
   opts?: SubscribeOpts,
 ): AppState[Key] => {
   const forceUpdate = useForceUpdateIfMounted();
+  const idRef = React.useRef(0);
 
   React.useEffect(() => {
-    store.subscribe(key, componentName, forceUpdate, opts);
+    if (idRef.current === 0) {
+      idRef.current = getUniqueId();
+    }
 
+    store.subscribe(key, idRef.current, forceUpdate, opts);
     return (): void => {
-      store.unsubscribe(key, componentName);
+      store.unsubscribe(key, idRef.current);
     };
-  }, [store, key, forceUpdate, componentName, opts]);
+  }, [store, key, forceUpdate, opts]);
 
   return store.getState(key);
 };
