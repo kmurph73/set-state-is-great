@@ -100,6 +100,31 @@ export default class Store<State> {
     this.forceUpdate(key);
   }
 
+  /**
+   * assign all differing values. will NOT rerender anything. returns bool if there was a differing value.
+   *
+   * https://github.com/kmurph73/set-state-is-great#assignifdiffers
+   *
+   * @example
+   *  store.assignIfDiffers({title: "asdf"});
+   *
+   */
+  assignIfDiffers(state: Partial<State>): boolean {
+    if (isPlainObject(state)) {
+      let differs = false;
+      for (const attr in state) {
+        if (state[attr] !== this.state[attr]) {
+          this.state[attr] = state[attr]!;
+          differs = true;
+        }
+      }
+
+      return differs;
+    } else {
+      throw new Error('You must pass in a plain JS object to assignIfDiffers');
+    }
+  }
+
   private createSetPartialState<Key extends keyof State>(key: Key) {
     return (next: Partial<State[Key]>): void => {
       return this.setPartialState(key, next);
