@@ -1,3 +1,7 @@
+2022 update: React 18, [`useId`][1], cleaning house
+
+[1]: https://reactjs.org/docs/hooks-reference.html#useid
+
 # Set State is Great
 
 <p align='center'>A global store + setState + hooks integration.</p>
@@ -82,7 +86,7 @@ If using TypeScript, the returning value will be [non-nullified](https://www.typ
 
 `getScopedHelpers` gives you the following functions scoped to a particular key:
 
-`useStoreState`, `useNonNullState`, `getState`, `getNonNullState`, `forceUpdate`, `setState`, `setPartialState`, `setStateIfDifferent`
+`useStoreState`, `useNonNullState`, `getNonNullState`, `forceUpdate`, `setState`, `setPartialState`, `setStateIfDifferent`
 
 ```javascript
 import { store } from './constants';
@@ -143,14 +147,13 @@ store.forceUpdate('drawer');
 store.setStateIfDifferent('breakpoint', 'sm');`
 ```
 
-## getState
+## accessing state
 
-You can also access a store's state via `getState(key)` & `getNonNullState(key)`:
+You can access a store's state via `store.state[key]` & `getNonNullState(key)`:
 
 ```javascript
-store.getState('drawer');
-store.state.drawer; // or just do this
-store.getNonNullState('drawer');
+store.state.drawer;
+store.getNonNullState('drawer'); // throws an error if null or undefined
 ```
 
 ## Organizing the store (and some TypeScript)
