@@ -4,26 +4,28 @@ import Store from './store';
 import { ForceUpdateIfMounted } from './types';
 import useForceUpdateIfMounted from './useForceUpdateIfMounted';
 
-const unsubscribe = <State, Key extends keyof State>(store: Store<State>, key: Key, id: string): void => {
-  const obj = store.componentStore.get(key);
-
-  if (obj) {
-    obj.delete(id);
-  }
-};
-
 const subscribe = <State, Key extends keyof State>(
   store: Store<State>,
   key: Key,
   id: string,
   forceUpdate: ForceUpdateIfMounted,
 ): void => {
-  const forceUpdatekeyMap = store.componentStore.get(key);
+  const componentMap = store.componentStore.get(key);
 
-  if (!forceUpdatekeyMap) {
+  if (componentMap) {
+    componentMap.set(id, forceUpdate);
+  } else {
     const componentMap = new Map();
     componentMap.set(id, forceUpdate);
     store.componentStore.set(key, componentMap);
+  }
+};
+
+const unsubscribe = <State, Key extends keyof State>(store: Store<State>, key: Key, id: string): void => {
+  const obj = store.componentStore.get(key);
+
+  if (obj) {
+    obj.delete(id);
   }
 };
 

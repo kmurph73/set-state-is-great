@@ -1,18 +1,21 @@
 /* eslint-disable @typescript-eslint/explicit-function-return-type */
 import React from 'react';
 import useForceUpdateIfMounted from './useForceUpdateIfMounted';
+const subscribe = (store, key, id, forceUpdate) => {
+    const componentMap = store.componentStore.get(key);
+    if (componentMap) {
+        componentMap.set(id, forceUpdate);
+    }
+    else {
+        const componentMap = new Map();
+        componentMap.set(id, forceUpdate);
+        store.componentStore.set(key, componentMap);
+    }
+};
 const unsubscribe = (store, key, id) => {
     const obj = store.componentStore.get(key);
     if (obj) {
         obj.delete(id);
-    }
-};
-const subscribe = (store, key, id, forceUpdate) => {
-    const forceUpdatekeyMap = store.componentStore.get(key);
-    if (!forceUpdatekeyMap) {
-        const componentMap = new Map();
-        componentMap.set(id, forceUpdate);
-        store.componentStore.set(key, componentMap);
     }
 };
 /**
