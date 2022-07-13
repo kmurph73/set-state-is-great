@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/explicit-function-return-type */
 import React from 'react';
 import useForceUpdateIfMounted from './useForceUpdateIfMounted';
 const subscribe = (store, key, id, forceUpdate) => {

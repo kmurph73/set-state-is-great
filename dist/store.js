@@ -1,6 +1,3 @@
-/* eslint-disable @typescript-eslint/no-non-null-assertion */
-import { isPlainObject } from './isPlainObject';
-import useStoreState from './useStoreState';
 export default class Store {
     constructor(state) {
         this.state = state;
@@ -27,7 +24,7 @@ export default class Store {
         }
     }
     /**
-     * *assign* values to an object value
+     * *assign* (via Object.assign) values to an object value.
      *
      * @param {Key} key - the key you'd like to update
      * @param {Partial<State[Key]>} partialNextState - the key/values you'd like to assign to an existing state object.  needs to be a plain object
@@ -39,19 +36,14 @@ export default class Store {
      *
      */
     setPartialState(key, partialNextState) {
-        if (isPlainObject(partialNextState)) {
-            const existingState = this.state[key];
-            if (!existingState) {
-                throw new Error(`State doesnt have ${key.toString()}; use setState if you want to assign an object`);
-            }
-            if (existingState === partialNextState) {
-                throw new Error(`You cannot pass an existing state object to setState.  If you want to force a rerender, use forceUpdate(key)`);
-            }
-            Object.assign(existingState, partialNextState);
+        const existingState = this.state[key];
+        if (!existingState) {
+            throw new Error(`State doesnt have ${key.toString()}; use setState if you want to assign an object`);
         }
-        else {
-            throw new Error('You must pass in a plain JS object to setPartialState');
+        if (existingState === partialNextState) {
+            throw new Error(`You cannot pass an existing state object to setState.  If you want to force a rerender, use forceUpdate(key)`);
         }
+        Object.assign(existingState, partialNextState);
         this.forceUpdate(key);
     }
     /**
@@ -86,38 +78,6 @@ export default class Store {
         this.forceUpdate(key);
     }
     /**
-     * set partial state & rerender _only_ if the new val is different from the old.  uses shallow comparison
-     *
-     * @example
-     *  store.setPartialStateIfDifferent('user_form', {name: 'Jim'});
-     *
-     */
-    setPartialStateIfDifferent(key, partialNextState) {
-        if (isPlainObject(partialNextState)) {
-            const existingState = this.state[key];
-            if (!existingState) {
-                throw new Error(`State doesnt have ${key.toString()}; use setState if you want to assign an object`);
-            }
-            if (existingState === partialNextState) {
-                throw new Error(`You cannot pass an existing state object to setState.  If you want to force a rerender, use forceUpdate(key)`);
-            }
-            let differs = false;
-            for (const prop in partialNextState) {
-                if (existingState[prop] !== partialNextState[prop]) {
-                    differs = true;
-                    break;
-                }
-            }
-            if (differs) {
-                Object.assign(existingState, partialNextState);
-                this.forceUpdate(key);
-            }
-        }
-        else {
-            throw new Error('You must pass in a plain JS object to setPartialState');
-        }
-    }
-    /**
      * Get a non-nullified key's state w/ `store.getNonNullState(key)`:
      *
      * https://github.com/kmurph73/set-state-is-great#getstate
@@ -128,24 +88,11 @@ export default class Store {
      */
     getNonNullState(key) {
         const state = this.state[key];
-        if (state === undefined || state === null) {
+        if (state == null) {
             throw new Error(`${key.toString()}'s state should be here`);
         }
         else {
-            return state;
-        }
-    }
-    useState(key) {
-        // eslint-disable-next-line react-hooks/rules-of-hooks
-        return useStoreState(this, key);
-    }
-    useNonNullState(key) {
-        // eslint-disable-next-line react-hooks/rules-of-hooks
-        const state = useStoreState(this, key);
-        if (state === null || state === undefined) {
-            throw new Error(`${key.toString()}'s state should be here`);
-        }
-        else {
+            // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
             return state;
         }
     }

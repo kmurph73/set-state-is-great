@@ -1,14 +1,12 @@
-/* eslint-disable @typescript-eslint/explicit-function-return-type */
 import React from 'react';
 import Store from './store';
-import { ForceUpdateIfMounted } from './types';
 import useForceUpdateIfMounted from './useForceUpdateIfMounted';
 
 const subscribe = <State, Key extends keyof State>(
   store: Store<State>,
   key: Key,
   id: string,
-  forceUpdate: ForceUpdateIfMounted,
+  forceUpdate: () => void,
 ): void => {
   const componentMap = store.componentStore.get(key);
 
