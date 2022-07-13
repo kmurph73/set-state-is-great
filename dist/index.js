@@ -1,2 +1,3 @@
 import Store from './store';
-export { Store };
+import useStoreState from './useStoreState';
+export { Store, useStoreState };
