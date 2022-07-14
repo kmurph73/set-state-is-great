@@ -81,6 +81,7 @@ Feel free to mutate it as you see fit.
 
 ```javascript
 store.state.drawer; // => {open: true, other: 'yup'}
+store.getNonNullState('drawer'); // throws an error if null or undefined
 store.state.drawer.open = false;
 store.forceUpdate('drawer');
 ```
@@ -108,15 +109,6 @@ store.forceUpdate('drawer');
 
 ```TypeScript
 store.setStateIfDifferent('breakpoint', 'sm');`
-```
-
-## accessing state
-
-You can access a store's state via `store.state[key]` & `getNonNullState(key)`:
-
-```javascript
-store.state.drawer;
-store.getNonNullState('drawer'); // throws an error if null or undefined
 ```
 
 ## Organizing the store (and some TypeScript)
