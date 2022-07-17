@@ -1,3 +1,7 @@
+2022 update: React 18, [`useId`][1], cleaning house
+
+[1]: https://reactjs.org/docs/hooks-reference.html#useid
+
 # Set State is Great
 
 <p align='center'>A global store + setState + hooks integration.</p>
@@ -42,63 +46,26 @@ For mutating a store's data, there's `setState` & `setPartialState`:
 store.setState('drawer', { open: true, other: 'yup' });
 ```
 
-Use `setPartialState` for partial updates to objects, it will _assign_ the new values to the existing object:
+Use `setPartialState` for partial updates to objects, it will _assign_ (via `Object.assign`) the new values to the existing object:
 
 ```javascript
 store.setPartialState('drawer', { open: true });
 ```
 
-## `store.useState`
+## `useStoreState`
 
-Watch for changes to a particular key using `store.useState`
+SSiG comes with 1 hook: `useStoreState`.  Use it to watch for changes to a particular key.
 
 ```javascript
 import { store } from './constants';
+import { useStoreState } from "set-state-is-great";
 
 function Drawer() {
-  const { open } = store.useState('drawer');
+  const { open } = useStoreState(store, 'drawer');
 
   return (
     <MuiDrawer open={open}>
       <div>just drawer things</div>
-    </MuiDrawer>
-  );
-}
-
-export default Drawer;
-```
-
-## `store.useNonNullState`
-
-If the value could be null or undefined, but you expect it not to be, `useNonNullState` will throw an error if the value is null or undefined.
-
-```javascript
-const { open } = store.useNonNullState('drawer');
-```
-
-If using TypeScript, the returning value will be [non-nullified](https://www.typescriptlang.org/docs/handbook/utility-types.html#nonnullabletype)
-
-## getScopedHelpers
-
-`getScopedHelpers` gives you the following functions scoped to a particular key:
-
-`useStoreState`, `useNonNullState`, `getState`, `getNonNullState`, `forceUpdate`, `setState`, `setPartialState`, `setStateIfDifferent`
-
-```javascript
-import { store } from './constants';
-
-const { setPartialState, useNonNullState: useDrawerState } = store.getScopedHelpers('drawer');
-
-const close = () => {
-  setPartialState({ open: false });
-};
-
-function Drawer() {
-  const { open } = useDrawerState();
-
-  return (
-    <MuiDrawer open={open}>
-      <div onClick={close}>close drawer</div>
     </MuiDrawer>
   );
 }
@@ -114,6 +81,7 @@ Feel free to mutate it as you see fit.
 
 ```javascript
 store.state.drawer; // => {open: true, other: 'yup'}
+store.getNonNullState('drawer'); // throws an error if null or undefined
 store.state.drawer.open = false;
 store.forceUpdate('drawer');
 ```
@@ -141,16 +109,6 @@ store.forceUpdate('drawer');
 
 ```TypeScript
 store.setStateIfDifferent('breakpoint', 'sm');`
-```
-
-## getState
-
-You can also access a store's state via `getState(key)` & `getNonNullState(key)`:
-
-```javascript
-store.getState('drawer');
-store.state.drawer; // or just do this
-store.getNonNullState('drawer');
 ```
 
 ## Organizing the store (and some TypeScript)

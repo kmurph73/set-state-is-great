@@ -2,6 +2,7 @@
 .DS_Store
 
 /lib
+.vscode/settings.json
 
 # Logs
 logs
@@ -12,9 +13,6 @@ node_modules
 
 # Debug log from npm
 npm-debug.log
-
-# Build output
-dist
 
 # Yarn
 yarn-error.log

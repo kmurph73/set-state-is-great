@@ -1,48 +1,66 @@
-/* eslint-disable @typescript-eslint/explicit-function-return-type */
 import React from 'react';
 import Store from './store';
 import useForceUpdateIfMounted from './useForceUpdateIfMounted';
-import { SubscribeOpts } from './types';
 
-let uniqueId = 1;
-const getUniqueId = () => uniqueId++;
+const subscribe = <State, Key extends keyof State>(
+  store: Store<State>,
+  key: Key,
+  id: string,
+  forceUpdate: () => void,
+): void => {
+  const componentMap = store.componentStore.get(key);
+
+  if (componentMap) {
+    componentMap.set(id, forceUpdate);
+  } else {
+    const componentMap = new Map();
+    componentMap.set(id, forceUpdate);
+    store.componentStore.set(key, componentMap);
+  }
+};
+
+const unsubscribe = <State, Key extends keyof State>(store: Store<State>, key: Key, id: string): void => {
+  const obj = store.componentStore.get(key);
+
+  if (obj) {
+    obj.delete(id);
+  }
+};
 
 /**
  * access and observe changes to a store's state
+ *
+ *  @param {Store} store - your SSiG Store object
+ *  @param {Key} key - the key you'd like to subscribe to
  *
  * https://github.com/kmurph73/set-state-is-great#the-usestore-hook
  *
  * @example
  *
+ * ``` jsx
  * function Drawer() {
- *   const {open} = useStoreState(store, 'drawer');
+ *   const { open } = useStoreState(store, 'drawer');
  *   return (
  *     <MuiDrawer open={open}>
  *       <div>just drawer things</div>
  *     </MuiDrawer>
  *   )
  * }
+ * ```
  */
-const useStoreState = <AppState, Key extends keyof AppState>(
-  store: Store<AppState>,
-  key: Key,
-  opts?: SubscribeOpts,
-): AppState[Key] => {
+const useStoreState = <State, Key extends keyof State>(store: Store<State>, key: Key): State[Key] => {
   const forceUpdate = useForceUpdateIfMounted();
-  const idRef = React.useRef(0);
+  const id = React.useId();
 
   React.useEffect(() => {
-    if (idRef.current === 0) {
-      idRef.current = getUniqueId();
-    }
+    subscribe(store, key, id, forceUpdate);
 
-    store.subscribe(key, idRef.current, forceUpdate, opts);
     return (): void => {
-      store.unsubscribe(key, idRef.current);
+      unsubscribe(store, key, id);
     };
-  }, [store, key, forceUpdate, opts]);
+  }, [id, store, key, forceUpdate]);
 
-  return store.getState(key);
+  return store.state[key];
 };
 
 export default useStoreState;
