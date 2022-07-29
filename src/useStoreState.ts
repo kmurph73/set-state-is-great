@@ -68,7 +68,7 @@ export const useStoreState = <State, Key extends keyof State>(store: Store<State
  *
  * checks that value is present and throws error if not
  *
- * returning value is NonNullified (via TS's NonNullable utility type)
+ * returning value is NonNull-ified (via TS's NonNullable utility type)
  *
  * https://www.typescriptlang.org/docs/handbook/utility-types.html#nonnullabletype
  *

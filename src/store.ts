@@ -87,6 +87,12 @@ export default class Store<State> {
     this.forceUpdate(key);
   }
 
+  private createSetState<Key extends keyof State>(key: Key) {
+    return (next: State[Key]): void => {
+      return this.setState(key, next);
+    };
+  }
+
   /**
    * set state & rerender _only_ if the new val is different from the old
    *
@@ -101,6 +107,12 @@ export default class Store<State> {
 
     this.state[key] = nextState;
     this.forceUpdate(key);
+  }
+
+  private createSetStateIfDifferent<Key extends keyof State>(key: Key) {
+    return (next: State[Key]): void => {
+      return this.setStateIfDifferent(key, next);
+    };
   }
 
   /**
@@ -124,15 +136,13 @@ export default class Store<State> {
   }
 
   /**
-   * getHelpers gives you setPartialState scoped to a particular store
-   *
-   * more scoped helpers to come as I need them!
+   * gives you setPartialState, setState & setStateIfDifferent scoped to a particular store
    *
    * https://github.com/kmurph73/set-state-is-great#gethelpers
    *
    * @example
    *
-   * const { setPartialState } = store.getScopedHelpers('productForm')
+   * const { setPartialState } = store.getHelpers('productForm');
    *
    * const onChange = (e) => {
    *   setPartialState({name: e.target.value});
@@ -150,6 +160,8 @@ export default class Store<State> {
   getHelpers<Key extends keyof State>(key: Key) {
     return {
       setPartialState: this.createSetPartialState(key),
+      setStateIfDifferent: this.createSetStateIfDifferent(key),
+      setState: this.createSetState(key),
     };
   }
 }
