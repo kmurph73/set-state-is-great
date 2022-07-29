@@ -63,6 +63,12 @@ export default class Store<State> {
     this.forceUpdate(key);
   }
 
+  private createSetPartialState<Key extends keyof State>(key: Key) {
+    return (next: Partial<State[Key]>): void => {
+      return this.setPartialState(key, next);
+    };
+  }
+
   /**
    * set a value for a key
    *
@@ -115,5 +121,35 @@ export default class Store<State> {
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       return state!;
     }
+  }
+
+  /**
+   * getHelpers gives you setPartialState scoped to a particular store
+   *
+   * more scoped helpers to come as I need them!
+   *
+   * https://github.com/kmurph73/set-state-is-great#gethelpers
+   *
+   * @example
+   *
+   * const { setPartialState } = store.getScopedHelpers('productForm')
+   *
+   * const onChange = (e) => {
+   *   setPartialState({name: e.target.value});
+   * };
+   *
+   * function Formy() {
+   *   const form = useNonNullState(store, 'productForm');
+   *   return (
+   *     <div>
+   *       <input value={form.name} onChange={onChange} />
+   *     </div>
+   *   )
+   * }
+   */
+  getHelpers<Key extends keyof State>(key: Key) {
+    return {
+      setPartialState: this.createSetPartialState(key),
+    };
   }
 }

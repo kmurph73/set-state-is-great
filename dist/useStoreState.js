@@ -38,7 +38,7 @@ const unsubscribe = (store, key, id) => {
  * }
  * ```
  */
-const useStoreState = (store, key) => {
+export const useStoreState = (store, key) => {
     const forceUpdate = useForceUpdateIfMounted();
     const id = React.useId();
     React.useEffect(() => {
@@ -49,4 +49,45 @@ const useStoreState = (store, key) => {
     }, [id, store, key, forceUpdate]);
     return store.state[key];
 };
-export default useStoreState;
+/**
+ * access and observe changes to a store's state
+ *
+ * checks that value is present and throws error if not
+ *
+ * returning value is NonNullified (via TS's NonNullable utility type)
+ *
+ * https://www.typescriptlang.org/docs/handbook/utility-types.html#nonnullabletype
+ *
+ *  @param {Store} store - your SSiG Store object
+ *  @param {Key} key - the key you'd like to subscribe to
+ *
+ * https://github.com/kmurph73/set-state-is-great#the-usestore-hook
+ *
+ * @example
+ *
+ * ``` jsx
+ * function Drawer() {
+ *   const { open } = useNonNullState(store, 'drawer');
+ *   return (
+ *     <MuiDrawer open={open}>
+ *       <div>just drawer things</div>
+ *     </MuiDrawer>
+ *   )
+ * }
+ * ```
+ */
+export const useNonNullState = (store, key) => {
+    const forceUpdate = useForceUpdateIfMounted();
+    const id = React.useId();
+    React.useEffect(() => {
+        subscribe(store, key, id, forceUpdate);
+        return () => {
+            unsubscribe(store, key, id);
+        };
+    }, [id, store, key, forceUpdate]);
+    const value = store.state[key];
+    if (!value) {
+        throw new Error(`value for ${key.toString()} is null/undefined, but shouldnt be!`);
+    }
+    return store.state[key];
+};

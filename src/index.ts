@@ -1,4 +1,4 @@
 import Store from './store';
-import useStoreState from './useStoreState';
+import { useStoreState, useNonNullState } from './useStoreState';
 
-export { Store, useStoreState };
+export { Store, useStoreState, useNonNullState };
