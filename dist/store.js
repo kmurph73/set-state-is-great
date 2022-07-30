@@ -23,6 +23,9 @@ export default class Store {
             }
         }
     }
+    assign(nextState) {
+        Object.assign(this.state, nextState);
+    }
     /**
      * *assign* (via Object.assign) values to an object value.
      *
@@ -45,11 +48,6 @@ export default class Store {
         }
         Object.assign(existingState, partialNextState);
         this.forceUpdate(key);
-    }
-    createSetPartialState(key) {
-        return (next) => {
-            return this.setPartialState(key, next);
-        };
     }
     /**
      * set a value for a key
@@ -102,15 +100,13 @@ export default class Store {
         }
     }
     /**
-     * getHelpers gives you setPartialState scoped to a particular store
-     *
-     * more scoped helpers to come as I need them!
+     * gives you setPartialState, setState & setStateIfDifferent scoped to a particular store
      *
      * https://github.com/kmurph73/set-state-is-great#gethelpers
      *
      * @example
      *
-     * const { setPartialState } = store.getScopedHelpers('productForm')
+     * const { setPartialState } = store.getHelpers('productForm');
      *
      * const onChange = (e) => {
      *   setPartialState({name: e.target.value});
@@ -127,7 +123,15 @@ export default class Store {
      */
     getHelpers(key) {
         return {
-            setPartialState: this.createSetPartialState(key),
+            setPartialState: (next) => {
+                return this.setPartialState(key, next);
+            },
+            setStateIfDifferent: (next) => {
+                return this.setStateIfDifferent(key, next);
+            },
+            setState: (next) => {
+                return this.setState(key, next);
+            },
         };
     }
 }

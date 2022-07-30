@@ -33,6 +33,10 @@ export default class Store<State> {
     }
   }
 
+  assign(nextState: Partial<State>): void {
+    Object.assign(this.state, nextState);
+  }
+
   /**
    * *assign* (via Object.assign) values to an object value.
    *
@@ -63,12 +67,6 @@ export default class Store<State> {
     this.forceUpdate(key);
   }
 
-  private createSetPartialState<Key extends keyof State>(key: Key) {
-    return (next: Partial<State[Key]>): void => {
-      return this.setPartialState(key, next);
-    };
-  }
-
   /**
    * set a value for a key
    *
@@ -87,12 +85,6 @@ export default class Store<State> {
     this.forceUpdate(key);
   }
 
-  private createSetState<Key extends keyof State>(key: Key) {
-    return (next: State[Key]): void => {
-      return this.setState(key, next);
-    };
-  }
-
   /**
    * set state & rerender _only_ if the new val is different from the old
    *
@@ -107,12 +99,6 @@ export default class Store<State> {
 
     this.state[key] = nextState;
     this.forceUpdate(key);
-  }
-
-  private createSetStateIfDifferent<Key extends keyof State>(key: Key) {
-    return (next: State[Key]): void => {
-      return this.setStateIfDifferent(key, next);
-    };
   }
 
   /**
@@ -159,9 +145,15 @@ export default class Store<State> {
    */
   getHelpers<Key extends keyof State>(key: Key) {
     return {
-      setPartialState: this.createSetPartialState(key),
-      setStateIfDifferent: this.createSetStateIfDifferent(key),
-      setState: this.createSetState(key),
+      setPartialState: (next: Partial<State[Key]>): void => {
+        return this.setPartialState(key, next);
+      },
+      setStateIfDifferent: (next: State[Key]): void => {
+        return this.setStateIfDifferent(key, next);
+      },
+      setState: (next: State[Key]): void => {
+        return this.setState(key, next);
+      },
     };
   }
 }
