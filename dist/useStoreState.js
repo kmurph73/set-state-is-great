@@ -52,7 +52,7 @@ export const useStoreState = (store, key) => {
 /**
  * access and observe changes to a store's state
  *
- * checks that value is present and throws an error if not
+ * checks that value is not null/undefined and throws an error if it is
  *
  * returning value is NonNull-ified (via TS's NonNullable utility type)
  *
@@ -86,7 +86,7 @@ export const useNonNullState = (store, key) => {
         };
     }, [id, store, key, forceUpdate]);
     const value = store.state[key];
-    if (!value) {
+    if (value == null) {
         throw new Error(`value for ${key.toString()} is null/undefined, but shouldnt be!`);
     }
     return store.state[key];
