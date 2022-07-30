@@ -54,10 +54,10 @@ store.setPartialState('drawer', { open: true });
 
 ## `useStoreState`
 
-SSiG comes with 1 hook: `useStoreState`.  Use it to watch for changes to a particular key.
+SSiG's main hook.  Use it to watch for changes to a particular key.
 
 ```javascript
-import { store } from './constants';
+import { store } from './globals';
 import { useStoreState } from "set-state-is-great";
 
 function Drawer() {
@@ -72,6 +72,12 @@ function Drawer() {
 
 export default Drawer;
 ```
+
+## `useNonNullState`
+
+The other hook - works just like `useStoreState`, but checks that the returning value is not null or undefined (and throws an error if it is).  Returning value is set to [NonNullable][2].
+
+[2]: https://www.typescriptlang.org/docs/handbook/utility-types.html#nonnullabletype
 
 ## `store.state`
 
@@ -113,7 +119,7 @@ store.setStateIfDifferent('breakpoint', 'sm');`
 
 ## Organizing the store (and some TypeScript)
 
-I recommend creating something like a `constants.ts` file with a `store` variable and function to set it:
+How I do it: create a `constants.ts` file with a `store` variable and function to set it:
 
 ```TypeScript
 // constants.ts
@@ -128,13 +134,13 @@ export const setStore = (theStore: Store<AppState>) => {
 }
 ```
 
-Then you can set it when creating your store:
+Then set it when creating the store:
 
 ```TypeScript
 // store.ts
 import { Store } from 'set-state-is-great';
 import { AppState } from './types';
-import { setStore } from './constants';
+import { setStore } from './globals';
 
 const appState: AppState = {
   drawer: { open: false, other: '?' },
@@ -146,13 +152,29 @@ const store = new Store<AppState>(appState);
 setStore(store);
 ```
 
-Then you can import the store from any file: `import { store } from './constants';`
+Then you import the store from any file: `import { store } from './globals';`
+
+## getHelpers
+
+`getHelpers` gives you the following functions scoped to a particular key:
+
+`setState`, `setPartialState`, `setStateIfDifferent`
+
+```javascript
+import { store } from './globals';
+
+const { setPartialState } = store.getHelpers('drawer');
+
+const closeDrawer = () => {
+  setPartialState({ open: false });
+};
+```
 
 ## TypeScript
 
 SSiG is written in & optimized for TS, and it's highly recommended that you use it with TS.
 
-To do so, define your store's state like so:
+To do so, first define your store's state:
 
 ```TypeScript
 type DrawerState = {
@@ -179,12 +201,3 @@ const store = new Store<AppState>({ colormode: "dark" });
 ```
 
 Now `setState` et al. will check that you're passing in the correct types.
-
-## Todo
-
-- Tests
-- chill
-
-## License
-
-MIT

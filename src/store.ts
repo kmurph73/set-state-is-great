@@ -26,15 +26,10 @@ export default class Store<State> {
     const componentObj = this.componentStore.get(key);
 
     if (componentObj) {
-      /* eslint-disable-next-line @typescript-eslint/no-unused-vars */
       for (const [_id, forceUpdate] of componentObj) {
         forceUpdate();
       }
     }
-  }
-
-  assign(nextState: Partial<State>): void {
-    Object.assign(this.state, nextState);
   }
 
   /**
@@ -102,12 +97,12 @@ export default class Store<State> {
   }
 
   /**
-   * Get a non-nullified key's state w/ `store.getNonNullState(key)`:
+   * get a NonNullified key's state
    *
    * https://github.com/kmurph73/set-state-is-great#getstate
    *
    * @example
-   *  store.getNonNullState('drawer', 'Drawer');
+   *  store.getNonNullState('drawer');
    *
    */
   getNonNullState<Key extends keyof State>(key: Key): NonNullable<State[Key]> {
@@ -116,7 +111,6 @@ export default class Store<State> {
     if (state == null) {
       throw new Error(`${key.toString()}'s state should be here`);
     } else {
-      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       return state!;
     }
   }
