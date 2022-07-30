@@ -66,7 +66,7 @@ export const useStoreState = <State, Key extends keyof State>(store: Store<State
 /**
  * access and observe changes to a store's state
  *
- * checks that value is present and throws error if not
+ * checks that value is present and throws an error if not
  *
  * returning value is NonNull-ified (via TS's NonNullable utility type)
  *
