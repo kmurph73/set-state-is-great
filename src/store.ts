@@ -26,7 +26,6 @@ export default class Store<State> {
     const componentObj = this.componentStore.get(key);
 
     if (componentObj) {
-      /* eslint-disable-next-line @typescript-eslint/no-unused-vars */
       for (const [_id, forceUpdate] of componentObj) {
         forceUpdate();
       }
@@ -98,12 +97,12 @@ export default class Store<State> {
   }
 
   /**
-   * Get a non-nullified key's state w/ `store.getNonNullState(key)`:
+   * get a NonNullified key's state
    *
    * https://github.com/kmurph73/set-state-is-great#getstate
    *
    * @example
-   *  store.getNonNullState('drawer', 'Drawer');
+   *  store.getNonNullState('drawer');
    *
    */
   getNonNullState<Key extends keyof State>(key: Key): NonNullable<State[Key]> {
@@ -112,8 +111,43 @@ export default class Store<State> {
     if (state == null) {
       throw new Error(`${key.toString()}'s state should be here`);
     } else {
-      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       return state!;
     }
+  }
+
+  /**
+   * gives you setPartialState, setState & setStateIfDifferent scoped to a particular store
+   *
+   * https://github.com/kmurph73/set-state-is-great#gethelpers
+   *
+   * @example
+   *
+   * const { setPartialState } = store.getHelpers('productForm');
+   *
+   * const onChange = (e) => {
+   *   setPartialState({name: e.target.value});
+   * };
+   *
+   * function Formy() {
+   *   const form = useNonNullState(store, 'productForm');
+   *   return (
+   *     <div>
+   *       <input value={form.name} onChange={onChange} />
+   *     </div>
+   *   )
+   * }
+   */
+  getHelpers<Key extends keyof State>(key: Key) {
+    return {
+      setPartialState: (next: Partial<State[Key]>): void => {
+        return this.setPartialState(key, next);
+      },
+      setStateIfDifferent: (next: State[Key]): void => {
+        return this.setStateIfDifferent(key, next);
+      },
+      setState: (next: State[Key]): void => {
+        return this.setState(key, next);
+      },
+    };
   }
 }

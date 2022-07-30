@@ -12,7 +12,6 @@ const useForceUpdateIfMounted = (): (() => void) => {
   }, []);
 
   // forceUpdate taken from: https://reactjs.org/docs/hooks-faq.html#is-there-something-like-forceupdate
-  /* eslint-disable-next-line @typescript-eslint/no-unused-vars */
   const [_, forceUpdateIfMounted] = React.useReducer((x) => (isMounted.current ? x + 1 : x), 0);
 
   return forceUpdateIfMounted;
