@@ -52,7 +52,7 @@ export const useStoreState = (store, key) => {
 /**
  * access and observe changes to a store's state
  *
- * checks that value is present and throws error if not
+ * checks that value is present and throws an error if not
  *
  * returning value is NonNull-ified (via TS's NonNullable utility type)
  *
