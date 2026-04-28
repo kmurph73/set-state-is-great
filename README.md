@@ -1,7 +1,3 @@
-2022 update: React 18, [`useId`][1], cleaning house
-
-[1]: https://reactjs.org/docs/hooks-reference.html#useid
-
 # Set State is Great
 
 <p align='center'>A global store + setState + hooks integration.</p>
@@ -46,7 +42,7 @@ For mutating a store's data, there's `setState` & `setPartialState`:
 store.setState('drawer', { open: true, other: 'yup' });
 ```
 
-Use `setPartialState` for partial updates to objects, it will _assign_ (via `Object.assign`) the new values to the existing object:
+Use `setPartialState` for partial updates to objects. It produces a new object via shallow spread (`{ ...existing, ...partial }`) and assigns it to the key:
 
 ```javascript
 store.setPartialState('drawer', { open: true });
@@ -83,30 +79,19 @@ The other hook - works just like `useStoreState`, but checks that the returning 
 
 Access the central state obj via `store.state`.
 
-Feel free to mutate it as you see fit.
-
 ```javascript
 store.state.drawer; // => {open: true, other: 'yup'}
 store.getNonNullState('drawer'); // throws an error if null or undefined
-store.state.drawer.open = false;
-store.forceUpdate('drawer');
 ```
 
-Or just replace it wholesale:
+In-place mutation of `store.state` will not propagate to subscribed components — `useSyncExternalStore` compares snapshots with `Object.is`, so an unchanged reference at the key means no re-render. Always go through the setters.
 
-```javascript
-store.state = {
-  viewShown: 'Home',
-  colormode: 'light',
-  drawer: { open: false, other: '?' },
-};
-```
+## Manually triggering a re-render
 
-## Force updating components
+To re-render watching components without otherwise changing state, replace the slice with a shallow copy — that produces a new reference at the key:
 
 ```TypeScript
-// forceUpdate all components watching a particular key
-store.forceUpdate('drawer');
+store.setState('drawer', { ...store.state.drawer });
 ```
 
 ## setStateIfDifferent

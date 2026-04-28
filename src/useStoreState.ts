@@ -1,31 +1,5 @@
-import React from 'react';
+import { useCallback, useSyncExternalStore } from 'react';
 import Store from './store';
-import useForceUpdateIfMounted from './useForceUpdateIfMounted';
-
-const subscribe = <State, Key extends keyof State>(
-  store: Store<State>,
-  key: Key,
-  id: string,
-  forceUpdate: () => void,
-): void => {
-  const componentMap = store.componentStore.get(key);
-
-  if (componentMap) {
-    componentMap.set(id, forceUpdate);
-  } else {
-    const componentMap = new Map();
-    componentMap.set(id, forceUpdate);
-    store.componentStore.set(key, componentMap);
-  }
-};
-
-const unsubscribe = <State, Key extends keyof State>(store: Store<State>, key: Key, id: string): void => {
-  const obj = store.componentStore.get(key);
-
-  if (obj) {
-    obj.delete(id);
-  }
-};
 
 /**
  * access and observe changes to a store's state
@@ -49,18 +23,10 @@ const unsubscribe = <State, Key extends keyof State>(store: Store<State>, key: K
  * ```
  */
 export const useStoreState = <State, Key extends keyof State>(store: Store<State>, key: Key): State[Key] => {
-  const forceUpdate = useForceUpdateIfMounted();
-  const id = React.useId();
+  const subscribe = useCallback((onChange: () => void) => store.subscribe(key, onChange), [store, key]);
+  const getSnapshot = useCallback(() => store.state[key], [store, key]);
 
-  React.useEffect(() => {
-    subscribe(store, key, id, forceUpdate);
-
-    return (): void => {
-      unsubscribe(store, key, id);
-    };
-  }, [id, store, key, forceUpdate]);
-
-  return store.state[key];
+  return useSyncExternalStore(subscribe, getSnapshot);
 };
 
 /**
@@ -94,22 +60,11 @@ export const useNonNullState = <State, Key extends keyof State>(
   store: Store<State>,
   key: Key,
 ): NonNullable<State[Key]> => {
-  const forceUpdate = useForceUpdateIfMounted();
-  const id = React.useId();
-
-  React.useEffect(() => {
-    subscribe(store, key, id, forceUpdate);
-
-    return (): void => {
-      unsubscribe(store, key, id);
-    };
-  }, [id, store, key, forceUpdate]);
-
-  const value = store.state[key];
+  const value = useStoreState(store, key);
 
   if (value == null) {
     throw new Error(`value for ${key.toString()} is null/undefined, but shouldnt be!`);
   }
 
-  return store.state[key]!;
+  return value!;
 };

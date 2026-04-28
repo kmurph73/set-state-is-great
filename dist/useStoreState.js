@@ -1,22 +1,4 @@
-import React from 'react';
-import useForceUpdateIfMounted from './useForceUpdateIfMounted';
-const subscribe = (store, key, id, forceUpdate) => {
-    const componentMap = store.componentStore.get(key);
-    if (componentMap) {
-        componentMap.set(id, forceUpdate);
-    }
-    else {
-        const componentMap = new Map();
-        componentMap.set(id, forceUpdate);
-        store.componentStore.set(key, componentMap);
-    }
-};
-const unsubscribe = (store, key, id) => {
-    const obj = store.componentStore.get(key);
-    if (obj) {
-        obj.delete(id);
-    }
-};
+import { useCallback, useSyncExternalStore } from 'react';
 /**
  * access and observe changes to a store's state
  *
@@ -39,15 +21,9 @@ const unsubscribe = (store, key, id) => {
  * ```
  */
 export const useStoreState = (store, key) => {
-    const forceUpdate = useForceUpdateIfMounted();
-    const id = React.useId();
-    React.useEffect(() => {
-        subscribe(store, key, id, forceUpdate);
-        return () => {
-            unsubscribe(store, key, id);
-        };
-    }, [id, store, key, forceUpdate]);
-    return store.state[key];
+    const subscribe = useCallback((onChange) => store.subscribe(key, onChange), [store, key]);
+    const getSnapshot = useCallback(() => store.state[key], [store, key]);
+    return useSyncExternalStore(subscribe, getSnapshot);
 };
 /**
  * access and observe changes to a store's state
@@ -77,17 +53,9 @@ export const useStoreState = (store, key) => {
  * ```
  */
 export const useNonNullState = (store, key) => {
-    const forceUpdate = useForceUpdateIfMounted();
-    const id = React.useId();
-    React.useEffect(() => {
-        subscribe(store, key, id, forceUpdate);
-        return () => {
-            unsubscribe(store, key, id);
-        };
-    }, [id, store, key, forceUpdate]);
-    const value = store.state[key];
+    const value = useStoreState(store, key);
     if (value == null) {
         throw new Error(`value for ${key.toString()} is null/undefined, but shouldnt be!`);
     }
-    return store.state[key];
+    return value;
 };
