@@ -1,6 +1,6 @@
 # Set State is Great
 
-<p align='center'>A global store + setState + hooks integration.</p>
+<p align='center'>Tiny zero-dependency React 19 global store built on useSyncExternalStore</p>
 
 Global state management without the ceremony. Zero dependency (other than React of course). No Context or reducers.
 
@@ -50,11 +50,11 @@ store.setPartialState('drawer', { open: true });
 
 ## `useStoreState`
 
-SSiG's main hook.  Use it to watch for changes to a particular key.
+SSiG's main hook. Use it to watch for changes to a particular key.
 
 ```javascript
 import { store } from './globals';
-import { useStoreState } from "set-state-is-great";
+import { useStoreState } from 'set-state-is-great';
 
 function Drawer() {
   const { open } = useStoreState(store, 'drawer');
@@ -71,7 +71,7 @@ export default Drawer;
 
 ## `useNonNullState`
 
-The other hook - works just like `useStoreState`, but checks that the returning value is not null or undefined (and throws an error if it is).  Returning value is set to [NonNullable][2].
+The other hook - works just like `useStoreState`, but checks that the returning value is not null or undefined (and throws an error if it is). Returning value is set to [NonNullable][2].
 
 [2]: https://www.typescriptlang.org/docs/handbook/utility-types.html#nonnullabletype
 
