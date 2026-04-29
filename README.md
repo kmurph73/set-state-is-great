@@ -94,14 +94,6 @@ To re-render watching components without otherwise changing state, replace the s
 store.setState('drawer', { ...store.state.drawer });
 ```
 
-## setStateIfDifferent
-
-`setStateIfDifferent` will only rerender watching components if the value differs. EG:
-
-```TypeScript
-store.setStateIfDifferent('breakpoint', 'sm');`
-```
-
 ## Organizing the store (and some TypeScript)
 
 How I do it: create a `constants.ts` file with a `store` variable and function to set it:
@@ -138,22 +130,6 @@ setStore(store);
 ```
 
 Then you import the store from any file: `import { store } from './globals';`
-
-## getHelpers
-
-`getHelpers` gives you the following functions scoped to a particular key:
-
-`setState`, `setPartialState`, `setStateIfDifferent`
-
-```javascript
-import { store } from './globals';
-
-const { setPartialState } = store.getHelpers('drawer');
-
-const closeDrawer = () => {
-  setPartialState({ open: false });
-};
-```
 
 ## TypeScript
 

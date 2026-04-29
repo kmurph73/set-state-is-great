@@ -78,21 +78,6 @@ export default class Store<State> {
   }
 
   /**
-   * set state & rerender _only_ if the new val is different from the old
-   *
-   * @example
-   *  store.setStateIfDifferent('breakpoint', 'sm');
-   */
-  setStateIfDifferent<Key extends keyof State>(key: Key, nextState: State[Key]): void {
-    if (this.state[key] === nextState) {
-      return;
-    }
-
-    this.state[key] = nextState;
-    this.notify(key);
-  }
-
-  /**
    * get a NonNullified key's state
    *
    * https://github.com/kmurph73/set-state-is-great#getstate
@@ -110,39 +95,4 @@ export default class Store<State> {
     }
   }
 
-  /**
-   * gives you setPartialState, setState & setStateIfDifferent scoped to a particular store
-   *
-   * https://github.com/kmurph73/set-state-is-great#gethelpers
-   *
-   * @example
-   *
-   * const { setPartialState } = store.getHelpers('productForm');
-   *
-   * const onChange = (e) => {
-   *   setPartialState({name: e.target.value});
-   * };
-   *
-   * function Formy() {
-   *   const form = useNonNullState(store, 'productForm');
-   *   return (
-   *     <div>
-   *       <input value={form.name} onChange={onChange} />
-   *     </div>
-   *   )
-   * }
-   */
-  getHelpers<Key extends keyof State>(key: Key) {
-    return {
-      setPartialState: (next: Partial<State[Key]>): void => {
-        return this.setPartialState(key, next);
-      },
-      setStateIfDifferent: (next: State[Key]): void => {
-        return this.setStateIfDifferent(key, next);
-      },
-      setState: (next: State[Key]): void => {
-        return this.setState(key, next);
-      },
-    };
-  }
 }
