@@ -1,8 +1,9 @@
 {
   "name": "set-state-is-great",
-  "version": "0.0.24",
-  "description": "Global store + setState + hooks integration",
+  "version": "0.1.0",
+  "description": "Tiny zero-dependency React 19 global store built on useSyncExternalStore",
   "license": "MIT",
+  "type": "module",
   "types": "./src/index.ts",
   "main": "./dist/index.js",
   "files": [
@@ -11,7 +12,8 @@
   ],
   "scripts": {
     "b": "rimraf dist && tsc",
-    "lint": "eslint src/**/*.ts"
+    "lint": "eslint src/**/*.ts",
+    "prepublishOnly": "yarn b"
   },
   "repository": {
     "type": "git",
@@ -28,13 +30,11 @@
     "react": "^19.0.0"
   },
   "devDependencies": {
-    "@types/react": "^19.0.8",
-    "@types/react-dom": "^19.0.3",
-    "eslint": "^9.20.0",
-    "@typescript-eslint/parser": "^8.23.0",
-    "@typescript-eslint/eslint-plugin": "^8.23.0",
-    "eslint-plugin-react-hooks": "^5.1.0",
-    "rimraf": "^6.0.1",
-    "typescript": "^5.7.3"
+    "@types/react": "^19.2.14",
+    "eslint": "^10.2.1",
+    "eslint-plugin-react-hooks": "^7.1.1",
+    "rimraf": "^6.1.3",
+    "typescript": "^6.0.3",
+    "typescript-eslint": "^8.59.1"
   }
 }

@@ -1,10 +1,6 @@
-2022 update: React 18, [`useId`][1], cleaning house
-
-[1]: https://reactjs.org/docs/hooks-reference.html#useid
-
 # Set State is Great
 
-<p align='center'>A global store + setState + hooks integration.</p>
+<p align='center'>Tiny zero-dependency React 19 global store built on useSyncExternalStore</p>
 
 Global state management without the ceremony. Zero dependency (other than React of course). No Context or reducers.
 
@@ -46,7 +42,7 @@ For mutating a store's data, there's `setState` & `setPartialState`:
 store.setState('drawer', { open: true, other: 'yup' });
 ```
 
-Use `setPartialState` for partial updates to objects, it will _assign_ (via `Object.assign`) the new values to the existing object:
+Use `setPartialState` for partial updates to objects. It produces a new object via shallow spread (`{ ...existing, ...partial }`) and assigns it to the key:
 
 ```javascript
 store.setPartialState('drawer', { open: true });
@@ -54,11 +50,11 @@ store.setPartialState('drawer', { open: true });
 
 ## `useStoreState`
 
-SSiG's main hook.  Use it to watch for changes to a particular key.
+SSiG's main hook. Use it to watch for changes to a particular key.
 
 ```javascript
 import { store } from './globals';
-import { useStoreState } from "set-state-is-great";
+import { useStoreState } from 'set-state-is-great';
 
 function Drawer() {
   const { open } = useStoreState(store, 'drawer');
@@ -75,7 +71,7 @@ export default Drawer;
 
 ## `useNonNullState`
 
-The other hook - works just like `useStoreState`, but checks that the returning value is not null or undefined (and throws an error if it is).  Returning value is set to [NonNullable][2].
+The other hook - works just like `useStoreState`, but checks that the returning value is not null or undefined (and throws an error if it is). Returning value is set to [NonNullable][2].
 
 [2]: https://www.typescriptlang.org/docs/handbook/utility-types.html#nonnullabletype
 
@@ -83,38 +79,19 @@ The other hook - works just like `useStoreState`, but checks that the returning 
 
 Access the central state obj via `store.state`.
 
-Feel free to mutate it as you see fit.
-
 ```javascript
 store.state.drawer; // => {open: true, other: 'yup'}
 store.getNonNullState('drawer'); // throws an error if null or undefined
-store.state.drawer.open = false;
-store.forceUpdate('drawer');
 ```
 
-Or just replace it wholesale:
+In-place mutation of `store.state` will not propagate to subscribed components — `useSyncExternalStore` compares snapshots with `Object.is`, so an unchanged reference at the key means no re-render. Always go through the setters.
 
-```javascript
-store.state = {
-  viewShown: 'Home',
-  colormode: 'light',
-  drawer: { open: false, other: '?' },
-};
-```
+## Manually triggering a re-render
 
-## Force updating components
+To re-render watching components without otherwise changing state, replace the slice with a shallow copy — that produces a new reference at the key:
 
 ```TypeScript
-// forceUpdate all components watching a particular key
-store.forceUpdate('drawer');
-```
-
-## setStateIfDifferent
-
-`setStateIfDifferent` will only rerender watching components if the value differs. EG:
-
-```TypeScript
-store.setStateIfDifferent('breakpoint', 'sm');`
+store.setState('drawer', { ...store.state.drawer });
 ```
 
 ## Organizing the store (and some TypeScript)
@@ -153,22 +130,6 @@ setStore(store);
 ```
 
 Then you import the store from any file: `import { store } from './globals';`
-
-## getHelpers
-
-`getHelpers` gives you the following functions scoped to a particular key:
-
-`setState`, `setPartialState`, `setStateIfDifferent`
-
-```javascript
-import { store } from './globals';
-
-const { setPartialState } = store.getHelpers('drawer');
-
-const closeDrawer = () => {
-  setPartialState({ open: false });
-};
-```
 
 ## TypeScript
 

@@ -1,48 +1,52 @@
-// ComponentMap stores all of the currently subscribed components for a given key
-type ComponentMap = Map<string, () => void>;
+type Listener = () => void;
 
 export default class Store<State> {
   state: State;
 
-  componentStore: Map<keyof State, ComponentMap>;
+  private listeners: Map<keyof State, Set<Listener>>;
 
   constructor(state: State) {
     this.state = state;
-    this.componentStore = new Map();
+    this.listeners = new Map();
   }
 
   /**
-   * force update all components watching a particular store
+   * subscribe to changes for a particular key. returns an unsubscribe function.
    *
-   * @param {keyof State} key - the key you'd like to forceUpdate
-   *
-   * https://github.com/kmurph73/set-state-is-great#force-updating-components
-   *
-   * @example
-   *  store.forceUpdate('drawer');
-   *
+   * primarily consumed by `useStoreState` / `useNonNullState`, but exposed for
+   * non-React callers.
    */
-  forceUpdate(key: keyof State): void {
-    const componentObj = this.componentStore.get(key);
+  subscribe<Key extends keyof State>(key: Key, listener: Listener): () => void {
+    let set = this.listeners.get(key);
+    if (!set) {
+      set = new Set();
+      this.listeners.set(key, set);
+    }
+    set.add(listener);
+    return (): void => {
+      set!.delete(listener);
+    };
+  }
 
-    if (componentObj) {
-      for (const [_id, forceUpdate] of componentObj) {
-        forceUpdate();
+  private notify<Key extends keyof State>(key: Key): void {
+    const set = this.listeners.get(key);
+    if (set) {
+      for (const listener of set) {
+        listener();
       }
     }
   }
 
   /**
-   * *assign* (via Object.assign) values to an object value.
+   * shallow-merge values into an object value (immutable — produces a new object).
    *
    * @param {Key} key - the key you'd like to update
-   * @param {Partial<State[Key]>} partialNextState - the key/values you'd like to assign to an existing state object.  needs to be a plain object
+   * @param {Partial<State[Key]>} partialNextState - the key/values you'd like to merge into the existing object
    *
    * https://github.com/kmurph73/set-state-is-great#setstate--setpartialstate
    *
    * @example
    *  store.setPartialState('drawer', { open: true });
-   *
    */
   setPartialState<Key extends keyof State>(key: Key, partialNextState: Partial<State[Key]>): void {
     const existingState = this.state[key];
@@ -51,15 +55,9 @@ export default class Store<State> {
       throw new Error(`State doesnt have ${key.toString()}; use setState if you want to assign an object`);
     }
 
-    if (existingState === partialNextState) {
-      throw new Error(
-        `You cannot pass an existing state object to setState.  If you want to force a rerender, use forceUpdate(key)`,
-      );
-    }
+    this.state[key] = { ...existingState, ...partialNextState };
 
-    Object.assign(existingState, partialNextState);
-
-    this.forceUpdate(key);
+    this.notify(key);
   }
 
   /**
@@ -73,27 +71,10 @@ export default class Store<State> {
    *
    * @example
    *  store.setState('viewShown', 'Home');
-   *
    */
   setState<Key extends keyof State>(key: Key, nextState: State[Key]): void {
     this.state[key] = nextState;
-    this.forceUpdate(key);
-  }
-
-  /**
-   * set state & rerender _only_ if the new val is different from the old
-   *
-   * @example
-   *  store.setStateIfDifferent('breakpoint', 'sm');
-   *
-   */
-  setStateIfDifferent<Key extends keyof State>(key: Key, nextState: State[Key]): void {
-    if (this.state[key] === nextState) {
-      return;
-    }
-
-    this.state[key] = nextState;
-    this.forceUpdate(key);
+    this.notify(key);
   }
 
   /**
@@ -103,7 +84,6 @@ export default class Store<State> {
    *
    * @example
    *  store.getNonNullState('drawer');
-   *
    */
   getNonNullState<Key extends keyof State>(key: Key): NonNullable<State[Key]> {
     const state = this.state[key];
@@ -115,39 +95,4 @@ export default class Store<State> {
     }
   }
 
-  /**
-   * gives you setPartialState, setState & setStateIfDifferent scoped to a particular store
-   *
-   * https://github.com/kmurph73/set-state-is-great#gethelpers
-   *
-   * @example
-   *
-   * const { setPartialState } = store.getHelpers('productForm');
-   *
-   * const onChange = (e) => {
-   *   setPartialState({name: e.target.value});
-   * };
-   *
-   * function Formy() {
-   *   const form = useNonNullState(store, 'productForm');
-   *   return (
-   *     <div>
-   *       <input value={form.name} onChange={onChange} />
-   *     </div>
-   *   )
-   * }
-   */
-  getHelpers<Key extends keyof State>(key: Key) {
-    return {
-      setPartialState: (next: Partial<State[Key]>): void => {
-        return this.setPartialState(key, next);
-      },
-      setStateIfDifferent: (next: State[Key]): void => {
-        return this.setStateIfDifferent(key, next);
-      },
-      setState: (next: State[Key]): void => {
-        return this.setState(key, next);
-      },
-    };
-  }
 }
