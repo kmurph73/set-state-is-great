@@ -10,11 +10,10 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Architecture
 
-This is a published npm package (`set-state-is-great`) — a tiny React global-store library. The whole public surface lives in three files under `src/`:
+This is a published npm package (`set-state-is-great`) — a tiny React global-store library. The whole public surface lives in two files under `src/` (re-exported by `src/index.ts`):
 
 - `src/store.ts` — the `Store<State>` class. Holds `state` and a `componentStore: Map<keyof State, Map<string, () => void>>` that maps each top-level state key to the set of subscribed components' `forceUpdate` callbacks. Mutation methods (`setState`, `setPartialState`, `setStateIfDifferent`, `forceUpdate`) all funnel through `forceUpdate(key)`, which iterates the component map for that key and calls each callback. `getHelpers(key)` returns key-scoped wrappers around the mutators.
-- `src/useStoreState.ts` — the `useStoreState` and `useNonNullState` hooks. Each generates a stable id via `React.useId()`, registers a `forceUpdate` callback into `store.componentStore` under `(key, id)` in a `useEffect`, and unregisters on cleanup. The hook returns `store.state[key]` directly — re-renders are driven by the registered callback firing, not by React tracking the value.
-- `src/useForceUpdateIfMounted.ts` — `useReducer`-based `forceUpdate` guarded by an `isMounted` ref so unmounted components don't re-render.
+- `src/useStoreState.ts` — the `useStoreState` and `useNonNullState` hooks. `useStoreState` generates a stable id via `React.useId()`, registers a plain `useReducer`-based `forceUpdate` callback into `store.componentStore` under `(key, id)` in a `useEffect`, and unregisters on cleanup. The hook returns `store.state[key]` directly — re-renders are driven by the registered callback firing, not by React tracking the value. `useNonNullState` delegates to `useStoreState` and throws if the value is null/undefined.
 
 Key design invariants to preserve when editing:
 - Subscriptions are **per top-level key**, not per nested path. A mutation to `state.drawer.open` notifies every component subscribed to `'drawer'`.
